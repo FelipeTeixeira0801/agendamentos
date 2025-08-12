@@ -5,38 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Agendamento Barbearia</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-    }
-    label, input, select, button {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 500px; margin: auto; }
+    label, input, select, button { display: block; width: 100%; margin-bottom: 10px; padding: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
   </style>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDooefGUX1N19hwNDV4xkCixAOCfby_DHY",
+      authDomain: "agendamento-31db2.firebaseapp.com",
+      projectId: "agendamento-31db2",
+      storageBucket: "agendamento-31db2.firebasestorage.app",
+      messagingSenderId: "339841113242",
+      appId: "1:339841113242:web:e71b8b3c10917c65d41323"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const horariosBase = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const dataInput = document.getElementById('data');
+      const horarioSelect = document.getElementById('horario');
+      const nomeInput = document.getElementById('nome');
+      const telefoneInput = document.getElementById('telefone');
+      const tabelaBody = document.querySelector('#tabela-agendamentos tbody');
+
+      dataInput.addEventListener('change', carregarHorarios);
+      document.getElementById('agendar').addEventListener('click', agendar);
+
+      async function carregarHorarios() {
+        horarioSelect.innerHTML = '<option value="">-- Escolha um horário --</option>';
+        const dataSelecionada = dataInput.value;
+        if (!dataSelecionada) return;
+
+        const q = query(collection(db, "agendamentos"), where("data", "==", dataSelecionada));
+        const querySnapshot = await getDocs(q);
+        const ocupados = querySnapshot.docs.map(doc => doc.data().horario);
+
+        horariosBase.forEach(h => {
+          if (!ocupados.includes(h)) {
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = h;
+            horarioSelect.appendChild(opt);
+          }
+        });
+      }
+
+      async function agendar() {
+        const data = dataInput.value;
+        const horario = horarioSelect.value;
+        const nome = nomeInput.value.trim();
+        const telefone = telefoneInput.value.trim();
+
+        if (!data || !horario || !nome || !telefone) {
+          alert('Preencha todos os campos!');
+          return;
+        }
+
+        await addDoc(collection(db, "agendamentos"), { data, horario, nome, telefone });
+        alert('Agendamento realizado com sucesso!');
+        nomeInput.value = '';
+        telefoneInput.value = '';
+        carregarHorarios();
+      }
+
+      onSnapshot(collection(db, "agendamentos"), (snapshot) => {
+        tabelaBody.innerHTML = '';
+        snapshot.forEach(doc => {
+          const a = doc.data();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${a.data}</td><td>${a.horario}</td><td>${a.nome}</td><td>${a.telefone}</td>`;
+          tabelaBody.appendChild(tr);
+        });
+      });
+    });
+  </script>
 </head>
 <body>
 <div class="container">
   <h1>Agendar Corte</h1>
   <label for="data">Escolha a Data:</label>
   <input type="date" id="data" />
-  
+
   <label for="horario">Horário Disponível:</label>
   <select id="horario">
     <option value="">-- Escolha um horário --</option>
@@ -63,66 +121,5 @@
     <tbody></tbody>
   </table>
 </div>
-
-<script>
-  const horariosBase = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"];
-  let agendamentos = [];
-
-  const dataInput = document.getElementById('data');
-  const horarioSelect = document.getElementById('horario');
-  const nomeInput = document.getElementById('nome');
-  const telefoneInput = document.getElementById('telefone');
-  const tabelaBody = document.querySelector('#tabela-agendamentos tbody');
-
-  dataInput.addEventListener('change', carregarHorarios);
-  document.getElementById('agendar').addEventListener('click', agendar);
-
-  function carregarHorarios() {
-    horarioSelect.innerHTML = '<option value="">-- Escolha um horário --</option>';
-    const dataSelecionada = dataInput.value;
-    if (!dataSelecionada) return;
-
-    const ocupados = agendamentos
-      .filter(a => a.data === dataSelecionada)
-      .map(a => a.horario);
-
-    horariosBase.forEach(h => {
-      if (!ocupados.includes(h)) {
-        const opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = h;
-        horarioSelect.appendChild(opt);
-      }
-    });
-  }
-
-  function agendar() {
-    const data = dataInput.value;
-    const horario = horarioSelect.value;
-    const nome = nomeInput.value.trim();
-    const telefone = telefoneInput.value.trim();
-
-    if (!data || !horario || !nome || !telefone) {
-      alert('Preencha todos os campos!');
-      return;
-    }
-
-    agendamentos.push({ data, horario, nome, telefone });
-    carregarHorarios();
-    atualizarTabela();
-    nomeInput.value = '';
-    telefoneInput.value = '';
-    alert('Agendamento realizado com sucesso!');
-  }
-
-  function atualizarTabela() {
-    tabelaBody.innerHTML = '';
-    agendamentos.forEach(a => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${a.data}</td><td>${a.horario}</td><td>${a.nome}</td><td>${a.telefone}</td>`;
-      tabelaBody.appendChild(tr);
-    });
-  }
-</script>
 </body>
 </html>
