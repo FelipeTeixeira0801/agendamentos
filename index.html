@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agendamento Barbearia</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+    label, input, select, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Agendar Corte</h1>
+  <label for="data">Escolha a Data:</label>
+  <input type="date" id="data" />
+  
+  <label for="horario">Horário Disponível:</label>
+  <select id="horario">
+    <option value="">-- Escolha um horário --</option>
+  </select>
+
+  <label for="nome">Seu Nome:</label>
+  <input type="text" id="nome" placeholder="Digite seu nome" />
+
+  <label for="telefone">Telefone:</label>
+  <input type="text" id="telefone" placeholder="Digite seu telefone" />
+
+  <button id="agendar">Confirmar Agendamento</button>
+
+  <h2>Agendamentos do Dia</h2>
+  <table id="tabela-agendamentos">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Horário</th>
+        <th>Cliente</th>
+        <th>Telefone</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+  const horariosBase = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"];
+  let agendamentos = [];
+
+  const dataInput = document.getElementById('data');
+  const horarioSelect = document.getElementById('horario');
+  const nomeInput = document.getElementById('nome');
+  const telefoneInput = document.getElementById('telefone');
+  const tabelaBody = document.querySelector('#tabela-agendamentos tbody');
+
+  dataInput.addEventListener('change', carregarHorarios);
+  document.getElementById('agendar').addEventListener('click', agendar);
+
+  function carregarHorarios() {
+    horarioSelect.innerHTML = '<option value="">-- Escolha um horário --</option>';
+    const dataSelecionada = dataInput.value;
+    if (!dataSelecionada) return;
+
+    const ocupados = agendamentos
+      .filter(a => a.data === dataSelecionada)
+      .map(a => a.horario);
+
+    horariosBase.forEach(h => {
+      if (!ocupados.includes(h)) {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        horarioSelect.appendChild(opt);
+      }
+    });
+  }
+
+  function agendar() {
+    const data = dataInput.value;
+    const horario = horarioSelect.value;
+    const nome = nomeInput.value.trim();
+    const telefone = telefoneInput.value.trim();
+
+    if (!data || !horario || !nome || !telefone) {
+      alert('Preencha todos os campos!');
+      return;
+    }
+
+    agendamentos.push({ data, horario, nome, telefone });
+    carregarHorarios();
+    atualizarTabela();
+    nomeInput.value = '';
+    telefoneInput.value = '';
+    alert('Agendamento realizado com sucesso!');
+  }
+
+  function atualizarTabela() {
+    tabelaBody.innerHTML = '';
+    agendamentos.forEach(a => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${a.data}</td><td>${a.horario}</td><td>${a.nome}</td><td>${a.telefone}</td>`;
+      tabelaBody.appendChild(tr);
+    });
+  }
+</script>
+</body>
+</html>
