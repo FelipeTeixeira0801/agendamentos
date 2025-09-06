@@ -1,5 +1,6 @@
 // firebase-init.js
-// Inclua nos HTMLs com: <script type="module" src="./firebase-init.js"></script>
+// Este arquivo inicializa o Firebase e EXPORTA "fb".
+// Use em outros arquivos: import { fb } from "./firebase-init.js";
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
@@ -10,9 +11,8 @@ import {
   serverTimestamp, collection, query, where, getDocs, orderBy,
   onSnapshot, updateDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-// (Opcional) Analytics — não é necessário para login/Firestore
-// import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
 
+// ⚠️ SEU CONFIG (do console do Firebase)
 const firebaseConfig = {
   apiKey: "AIzaSyByfdSzd0h0wYGMb7FJZx6zP49wQiUJOng",
   authDomain: "agendamentos-barbearia-3751c.firebaseapp.com",
@@ -23,14 +23,13 @@ const firebaseConfig = {
   measurementId: "G-TYB71WR997"
 };
 
-// Evita múltiplas inicializações
+// Evita inicializar 2x
 const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app); // opcional
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Expõe para client.js e admin.js
-window._fb = {
+// Monta um helper único para o resto do site
+export const fb = {
   app, auth, db,
   // Auth
   signInWithEmailAndPassword, onAuthStateChanged, signOut,
@@ -38,3 +37,6 @@ window._fb = {
   doc, getDoc, setDoc, runTransaction, serverTimestamp,
   collection, query, where, getDocs, orderBy, onSnapshot, updateDoc, deleteDoc
 };
+
+// (opcional) também deixa global para quem já usava window._fb
+window._fb = fb;
