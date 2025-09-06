@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=136" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=142" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -13,26 +13,28 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{font-family:system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:var(--text);font-size:17px}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui, Arial, sans-serif;font-size:17px}
   a{color:var(--text);text-decoration:none}
 
+  /* Header */
   header{position:sticky;top:0;z-index:10;background:var(--surface);
-    border-bottom:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+    border-bottom:1px solid var(--border);padding:10px 14px;
+    display:flex;justify-content:space-between;align-items:center}
   .brand{display:flex;align-items:center;gap:12px}
   .brand img{width:64px;height:64px;object-fit:cover;border-radius:12px;filter:drop-shadow(0 0 10px rgba(45,212,191,.35))}
   .brand .name{font-weight:900;letter-spacing:.35px;font-size:26px;line-height:1}
   @media (max-width:380px){ .brand img{width:58px;height:58px} .brand .name{font-size:24px} }
-  header .adm{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent}
-  header .adm:hover{border-color:var(--accent)}
+  .adm{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent}
+  .adm:hover{border-color:var(--accent)}
 
+  /* Layout */
   .container{max-width:960px;margin:12px auto 28px;padding:0 12px}
-  .stack{display:grid;gap:16px}
+  .stack{display:grid;gap:14px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
-  .sub{color:var(--muted);font-size:14px;margin:2px 0 10px}
 
-  /* Data (semana) */
-  .weekHeader{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;margin-bottom:8px;}
-  .monthLabel{text-align:center;font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
+  /* Semana (calendário) */
+  .weekHeader{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;margin-bottom:6px;}
+  .monthLabel{font-weight:800;text-transform:capitalize;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
   .weekNav{display:flex;gap:8px}
   .iconBtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:18px}
   .iconBtn:hover{border-color:var(--accent)}
@@ -46,22 +48,21 @@
   .servicesGrid{display:grid;gap:10px}
   @media (min-width:480px){ .servicesGrid{grid-template-columns:1fr 1fr} }
   @media (min-width:840px){ .servicesGrid{grid-template-columns:1fr 1fr 1fr 1fr} }
-  .svcItem{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;gap:10px;padding:10px 12px;}
+  .svcItem{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;gap:10px;padding:10px 12px}
   .svcItem > input{accent-color:var(--accent);transform:scale(1.1)}
   .svcLabel{flex:1;min-width:0}
   .svcPrice{font-weight:700;white-space:nowrap}
-  .priceRow{margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
+  .priceRow{margin-top:6px;display:flex;justify-content:flex-end;align-items:center}
   .total{font-weight:800;font-size:19px}
 
-  /* Horários */
+  /* Horários (grid sempre aberta) */
   .timeSelect{margin-top:2px}
-  #timeToggle{display:none}  /* sem texto; grid sempre aberta */
+  #timeToggle{display:none}
   .timeBox{display:block;margin-top:0}
   .timeGrid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:900px){.timeGrid{grid-template-columns:repeat(6,1fr)}}
   button{padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px}
-  button.ghost{background:transparent}
   button:hover{border-color:var(--accent)}
   .timeBtn{width:100%;font-weight:700;min-height:50px}
 
@@ -90,7 +91,7 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=136" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=142" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
@@ -99,7 +100,7 @@
   <main class="container">
     <div class="stack">
 
-      <!-- BLOCO 1: DATA (sem textos) -->
+      <!-- BLOCO 1: DATA (sem textos extras) -->
       <section class="card">
         <div class="weekHeader">
           <button id="prevWeek" class="iconBtn" title="Semana anterior">‹</button>
@@ -112,12 +113,10 @@
         <div id="weekGrid" class="weekStrip"></div>
       </section>
 
-      <!-- BLOCO 2: SERVIÇOS (sem títulos/botão) -->
+      <!-- BLOCO 2: SERVIÇOS (só os cards + total) -->
       <section class="card">
-        <button id="btnTabela" class="ghost" type="button" style="display:none">Tabela</button>
         <div class="servicesGrid" id="services"></div>
         <div class="priceRow">
-          <span class="sub" style="visibility:hidden"> </span>
           <span class="total" id="total">Total: R$ 0,00</span>
         </div>
       </section>
@@ -130,7 +129,7 @@
           </button>
           <div id="timeBox" class="timeBox">
             <div id="timeGrid" class="timeGrid"></div>
-            <p class="sub" id="info" style="margin-top:8px"></p>
+            <p class="muted" id="info" style="margin-top:6px"></p>
           </div>
         </div>
         <input type="date" id="data" style="display:none" />
@@ -139,7 +138,7 @@
     </div>
   </main>
 
-  <!-- Modal confirmação -->
+  <!-- Modal: confirmação -->
   <dialog id="dlg">
     <div class="sheet">
       <h3 id="dlgTitulo">Confirmar</h3>
@@ -162,7 +161,7 @@
     </div>
   </dialog>
 
-  <!-- Modal Tabela (mantido, sem botão público) -->
+  <!-- (opcional) Modal da tabela de preços mantido, sem botão público -->
   <dialog id="dlgTabela">
     <div class="sheet">
       <h3>Tabela de preços</h3>
@@ -182,22 +181,24 @@
     </div>
   </dialog>
 
-  <!-- helper para estilizar os serviços -->
+  <!-- helper para estilizar os serviços gerados pelo JS -->
   <script type="module">
+    const list = document.getElementById('services');
     const observer = new MutationObserver(() => {
-      document.querySelectorAll('#services label').forEach(l => {
+      list.querySelectorAll('label').forEach(l => {
         l.classList.add('svcItem');
         const spans = l.querySelectorAll('span,strong');
         if (spans[0]) spans[0].classList.add('svcLabel');
         if (spans[1]) spans[1].classList.add('svcPrice');
       });
     });
-    observer.observe(document.getElementById('services'), { childList: true, subtree: true });
+    observer.observe(list, { childList: true, subtree: true });
 
-    const fechar = document.getElementById('fecharTabela');
-    if (fechar) fechar.onclick = () => document.getElementById('dlgTabela').close();
+    document.getElementById('fecharTabela')?.addEventListener('click', () => {
+      document.getElementById('dlgTabela').close();
+    });
   </script>
 
-  <script type="module" src="./client.js"></script>
+  <script type="module" src="./client.js?v=141"></script>
 </body>
 </html>
