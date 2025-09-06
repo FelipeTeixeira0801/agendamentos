@@ -2,41 +2,27 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<!-- zoom levemente menor + safe-area -->
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=128" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=129" />
 <style>
-  /* ====== TEMA DARK ====== */
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
     --border:#26262e; --text:#f5f5f7; --muted:#a8a8b3; --accent:#2dd4bf;
+    --ok:#22c55e; --danger:#f87171;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    font-family:system-ui, Arial, sans-serif;
-    margin:0; background:var(--bg); color:var(--text);
-    font-size:17px; /* ↑ fonte base um pouco maior */
-  }
+  body{font-family:system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:var(--text);font-size:17px}
   a{color:var(--text);text-decoration:none}
 
-  /* Header com logo e nome maiores */
-  header{
-    position:sticky;top:0;z-index:10;background:var(--surface);
-    border-bottom:1px solid var(--border);
-    padding:10px 14px;display:flex;justify-content:space-between;align-items:center
-  }
+  /* Header */
+  header{position:sticky;top:0;z-index:10;background:var(--surface);
+    border-bottom:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
   .brand{display:flex;align-items:center;gap:12px}
-  .brand img{
-    width:64px;height:64px;object-fit:cover;border-radius:12px;
-    filter: drop-shadow(0 0 10px rgba(45,212,191,.35));
-  }
+  .brand img{width:64px;height:64px;object-fit:cover;border-radius:12px;filter: drop-shadow(0 0 10px rgba(45,212,191,.35))}
   .brand .name{font-weight:900;letter-spacing:.35px;font-size:26px;line-height:1}
-  @media (max-width:380px){
-    .brand img{width:58px;height:58px}
-    .brand .name{font-size:24px}
-  }
+  @media (max-width:380px){ .brand img{width:58px;height:58px} .brand .name{font-size:24px} }
   header .adm{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent}
   header .adm:hover{border-color:var(--accent)}
 
@@ -46,70 +32,53 @@
   .grid{display:grid;gap:14px}
   @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
-  /* ====== SELETOR SEMANAL (só Ter–Sáb) ====== */
+  /* Semana (Ter–Sáb) */
   .weekCard{display:grid;gap:10px}
-  .weekHeader{
-    display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center;
-  }
-  .monthLabel{
-    text-align:center; font-weight:800; text-transform:capitalize;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    font-size:18px; /* ↑ */
-  }
+  .weekHeader{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center}
+  .monthLabel{text-align:center;font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
   .weekNav{display:flex;gap:8px}
-  .iconBtn{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:40px;height:40px;border-radius:12px;border:1px solid var(--border);
-    background:var(--surface-2);color:var(--text);cursor:pointer;font-size:18px
-  }
+  .iconBtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:18px}
   .iconBtn:hover{border-color:var(--accent)}
+  .weekStrip{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 8px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;min-height:82px}
+  .dayBtn{min-width:70px;scroll-snap-align:center;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);color:var(--text);padding:12px 10px;display:grid;justify-items:center;gap:4px;cursor:pointer}
+  .dayBtn .dow{font-size:12px;color:var(--muted)}
+  .dayBtn .num{font-weight:800;font-size:18px}
+  .dayBtn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.25) inset}
 
-  /* Faixa rolável Ter–Sáb */
-  .weekStrip{
-    display:flex; gap:10px; overflow-x:auto; padding:6px 2px 8px;
-    -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
-    min-height:82px; /* impede “sumir” no iOS */
-  }
-  .dayBtn{
-    min-width:70px; scroll-snap-align:center;
-    border:1px solid var(--border);border-radius:14px;background:var(--surface-2);
-    color:var(--text);padding:12px 10px;display:grid;justify-items:center;gap:4px;cursor:pointer
-  }
-  .dayBtn .dow{font-size:12px;color:var(--muted)}   /* ↑ */
-  .dayBtn .num{font-weight:800;font-size:18px}      /* ↑ */
-  .dayBtn.active{border-color:var(--accent); box-shadow:0 0 0 2px rgba(45,212,191,.25) inset}
-
-  /* ====== QUADRADO DE HORÁRIOS ====== */
+  /* Horários */
   .timeSelect{margin-top:12px}
   .timeBox{display:none;margin-top:10px}
   .timeSelect.open .timeBox{display:block}
-  #timeToggle{
-    display:flex;justify-content:space-between;align-items:center;
-    width:100%; padding:18px 16px; border-radius:14px; cursor:pointer;
-    border:2px solid var(--border); background:var(--surface-2); color:var(--text);
-    font-size:17px; /* ↑ */
-  }
+  #timeToggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:18px 16px;border-radius:14px;cursor:pointer;border:2px solid var(--border);background:var(--surface-2);color:var(--text);font-size:17px}
   #timeToggle:focus{outline:none;border-color:var(--accent)}
-
   .timeGrid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:820px){.timeGrid{grid-template-columns:repeat(5,1fr)}}
-
-  button{
-    padding:12px 16px;border-radius:12px;border:1px solid var(--border);
-    background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px /* ↑ */
-  }
+  button{padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px}
   button.ghost{background:transparent}
   button:hover{border-color:var(--accent)}
-  button.timeBtn{width:100%;font-weight:700;min-height:50px} /* ↑ */
+  button.timeBtn{width:100%;font-weight:700;min-height:50px}
 
-  /* Dialogs */
-  dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface-2);color:var(--text)}
-  dialog .box{padding:18px}
-  dialog form{display:grid;gap:12px}
-  dialog input{padding:14px;border-radius:12px;border:1px solid var(--border);background:#0f0f14;color:var(--text);font-size:17px}
-  dialog input:focus{outline:none;border-color:var(--accent)}
-  .ok{color:#22c55e}.erro{color:#f87171}
+  /* ===== Modal refinado ===== */
+  dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface);color:var(--text);padding:0}
+  dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+  .sheet{padding:18px}
+  .sheet h3{margin:0 0 10px;font-size:18px}
+  .summary{display:grid;gap:8px;margin-bottom:12px}
+  .sumRow{display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .muted{color:var(--muted);font-size:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:6px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);font-size:14px}
+  .sheet-form{display:grid;gap:12px}
+  .field{display:grid;gap:6px}
+  .field span{font-size:14px;color:var(--muted)}
+  .field input{padding:14px 12px;border-radius:12px;border:1px solid var(--border);background:#0f0f14;color:var(--text);font-size:17px}
+  .field input:focus{outline:none;border-color:var(--accent)}
+  .sheet-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
+  .primary{border-color:var(--accent);box-shadow:inset 0 0 0 1px rgba(45,212,191,.35)}
+  .feedback{margin-top:10px;font-size:14px}
+  .feedback.ok{color:var(--ok)}
+  .feedback.erro{color:var(--danger)}
 
   /* Serviços */
   .services{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -117,24 +86,24 @@
   .svcItem{border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;background:var(--surface-2);font-size:17px}
   .priceBox{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
   .total{font-weight:700;font-size:19px}
-  .dateHint{color:var(--muted);font-size:14px} /* ↑ */
+  .dateHint{color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=128" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=129" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
   </header>
 
   <main class="grid">
-    <!-- Coluna 1: Semana + Horários -->
+    <!-- Coluna 1 -->
     <section class="card">
       <h3>Agendamento</h3>
 
-      <!-- Seletor semanal (somente Ter–Sáb) -->
+      <!-- Semana (Ter–Sáb) -->
       <div class="weekCard">
         <div class="weekHeader">
           <button id="prevWeek" class="iconBtn" title="Semana anterior">‹</button>
@@ -148,7 +117,7 @@
         <span class="dateHint">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
-      <!-- Quadradinho dos horários -->
+      <!-- Horários -->
       <div id="timeSelect" class="timeSelect">
         <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox">
           <span id="timeLabel" style="font-weight:700">Selecionar horário</span>
@@ -160,7 +129,6 @@
         </div>
       </div>
 
-      <!-- input escondido para reaproveitar a lógica -->
       <input type="date" id="data" style="display:none" />
     </section>
 
@@ -178,26 +146,34 @@
     </section>
   </main>
 
-  <!-- Modal de confirmação -->
+  <!-- ===== Modal ===== -->
   <dialog id="dlg">
-    <div class="box">
-      <h3 id="dlgTitulo">Confirmar agendamento</h3>
-      <p id="resumo"></p>
-      <form id="formAgendar">
-        <input type="text" name="nome" placeholder="Seu nome" required />
-        <input type="tel" name="telefone" placeholder="Seu telefone (WhatsApp)" required />
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+    <div class="sheet">
+      <h3 id="dlgTitulo">Confirmar</h3>
+      <div id="resumo" class="summary"></div>
+
+      <form id="formAgendar" class="sheet-form">
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" name="nome" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span>Telefone (WhatsApp)</span>
+          <input type="tel" name="telefone" inputmode="tel" placeholder="(00) 00000-0000" required />
+        </label>
+        <div class="sheet-actions">
           <button type="button" class="ghost" id="btnCancelar">Voltar</button>
-          <button type="submit">Confirmar</button>
+          <button type="submit" class="primary">Confirmar</button>
         </div>
       </form>
-      <p id="msg" style="margin-top:8px"></p>
+
+      <p id="msg" class="feedback"></p>
     </div>
   </dialog>
 
-  <!-- Modal da Tabela de Preços -->
+  <!-- Tabela de preços -->
   <dialog id="dlgTabela">
-    <div class="box">
+    <div class="sheet">
       <h3>Tabela de preços</h3>
       <ul style="list-style:none;padding:0;margin:6px 0">
         <li>Cabelo — R$ 35,00</li>
@@ -209,7 +185,7 @@
         <li>Pigmentação — R$ 40,00</li>
         <li>Platinado — R$ 130,00</li>
       </ul>
-      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <div class="sheet-actions">
         <button class="ghost" id="fecharTabela" type="button">Fechar</button>
       </div>
     </div>
