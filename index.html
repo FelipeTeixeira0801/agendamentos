@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Agendamentos — Cliente</title>
 <style>
-  :root{ --border:#e6e6e6; --muted:#666; --bg:#ffffff; }
+  :root{ --border:#e6e6e6; --muted:#666; --accent:#111; }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{font-family:system-ui, Arial, sans-serif; margin:0; background:#fafafa; color:#111}
@@ -18,15 +18,17 @@
   .grid{display:grid; gap:12px}
   @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
-  .field{display:grid; gap:6px}
-  .field label{font-size:14px; color:#222}
-  .input-like{ display:flex; align-items:center; justify-content:space-between;
-    padding:14px 12px; border:1px solid var(--border); border-radius:12px;
-    background:#fff; font-size:17px; width:100%; }
+  /* Data bem visível */
+  .field{display:grid; gap:8px}
+  .field label{font-size:15px; color:#111; font-weight:600}
+  input[type="date"].dateInput{
+    width:100%; padding:16px 14px; font-size:20px; line-height:1.2;
+    border:2px solid var(--accent); border-radius:14px; background:#fff;
+  }
+  .dateRow{display:flex; gap:8px; align-items:center}
+  .dateHint{color:var(--muted); font-size:13px}
 
-  .muted{color:var(--muted); font-size:13px}
-
-  /* Quadradinho horários */
+  /* “Quadradinho” horários */
   .timeSelect{margin-top:12px}
   .timeBox{display:none; margin-top:10px}
   .timeSelect.open .timeBox{display:block}
@@ -40,12 +42,13 @@
   button{padding:11px 14px; border-radius:12px; border:1px solid var(--border); background:#111; color:#fff; cursor:pointer}
   button.ghost{background:#fff; color:#111}
 
-  /* >>> Correção: força texto visível nos horários <<< */
+  /* Horários – fonte um pouco maior e forçada para contraste */
   button.timeBtn{
     background:#fff !important;
     color:#111 !important;
     border:1px solid var(--border);
-    font-weight:600;
+    font-weight:700;
+    font-size:16px;          /* ↑ levemente maior */
     width:100%;
   }
   button.timeBtn.disabled{
@@ -82,18 +85,21 @@
 
       <div class="field">
         <label for="data">Escolha a data</label>
-        <input type="date" id="data" class="input-like" />
-        <span class="muted">Funcionamos de <b>terça a sábado</b>, 08:00–19:00.</span>
+        <div class="dateRow">
+          <input type="date" id="data" class="dateInput" />
+          <button type="button" id="btnHoje" class="ghost" title="Ir para hoje">Hoje</button>
+        </div>
+        <span class="dateHint">Funcionamos de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
       <div id="timeSelect" class="timeSelect">
-        <button id="timeToggle" class="input-like" type="button" aria-expanded="false" aria-controls="timeBox">
-          <span id="timeLabel">Selecionar horário</span>
-          <span style="font-size:13px; color:var(--muted)">toque para ver</span>
+        <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox" style="display:flex;justify-content:space-between;align-items:center">
+          <span id="timeLabel" style="font-size:18px;font-weight:600;color:#111">Selecionar horário</span>
+          <span style="font-size:13px; color:#666">toque para ver</span>
         </button>
         <div id="timeBox" class="timeBox">
           <div id="timeGrid" class="timeGrid"></div>
-          <p class="muted" id="info" style="margin-top:8px">Escolha uma data para ver os horários.</p>
+          <p class="dateHint" id="info" style="margin-top:8px">Escolha uma data para ver os horários.</p>
         </div>
       </div>
     </section>
@@ -106,7 +112,7 @@
       </div>
       <div class="services" id="services"></div>
       <div class="priceBox">
-        <span class="muted">Selecione pelo menos 1 serviço</span>
+        <span class="dateHint">Selecione pelo menos 1 serviço</span>
         <span class="total" id="total">Total: R$ 0,00</span>
       </div>
     </section>
