@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=133" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=135" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -28,7 +28,6 @@
   .container{max-width:960px;margin:12px auto 28px;padding:0 12px}
   .stack{display:grid;gap:16px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
-  .card h3{margin:0 0 8px}
   .sub{color:var(--muted);font-size:14px;margin:2px 0 10px}
 
   /* Data (semana) */
@@ -56,10 +55,9 @@
 
   /* Horários */
   .timeSelect{margin-top:2px}
-  #timeToggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px}
-  #timeToggle:hover{border-color:var(--accent)}
-  .timeBox{display:none;margin-top:10px}
-  .timeSelect.open .timeBox{display:block}
+  /* botão de abrir/fechar ficará oculto, mas existe no DOM pra não quebrar o JS */
+  #timeToggle{display:none}
+  .timeBox{display:block;margin-top:0} /* sempre aberto */
   .timeGrid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:900px){.timeGrid{grid-template-columns:repeat(6,1fr)}}
@@ -93,8 +91,7 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=133" alt="Logo AgendApp" />
-      <span class="name">AgendApp</span>
+      <img src="/agendamentos/agendapp.png?v=135" alt="Logo AgendApp" />
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
   </header>
@@ -102,11 +99,8 @@
   <main class="container">
     <div class="stack">
 
-      <!-- BLOCO 1: DATA -->
-      <section class="card" aria-labelledby="sec-data">
-        <h3 id="sec-data">Escolha a data</h3>
-        <p class="sub">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</p>
-
+      <!-- BLOCO 1: DATA (sem textos) -->
+      <section class="card">
         <div class="weekHeader">
           <button id="prevWeek" class="iconBtn" title="Semana anterior">‹</button>
           <div id="monthLabel" class="monthLabel">—</div>
@@ -115,42 +109,32 @@
             <button id="nextWeek" class="iconBtn" title="Próxima semana">›</button>
           </div>
         </div>
-
         <div id="weekGrid" class="weekStrip"></div>
       </section>
 
-      <!-- BLOCO 2: SERVIÇOS -->
-      <section class="card" aria-labelledby="sec-servicos">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h3 id="sec-servicos" style="margin:0">Escolha os serviços</h3>
-          <button class="ghost" id="btnTabela" type="button">Ver tabela de preços</button>
-        </div>
-
+      <!-- BLOCO 2: SERVIÇOS (sem títulos/botão) -->
+      <section class="card">
+        <!-- botão da tabela existe porém oculto para não quebrar o client.js -->
+        <button id="btnTabela" class="ghost" type="button" style="display:none">Tabela</button>
         <div class="servicesGrid" id="services"></div>
         <div class="priceRow">
-          <span class="sub">Selecione pelo menos 1 serviço</span>
+          <span class="sub" style="visibility:hidden"> </span>
           <span class="total" id="total">Total: R$ 0,00</span>
         </div>
       </section>
 
-      <!-- BLOCO 3: HORÁRIOS -->
-      <section class="card" aria-labelledby="sec-horarios">
-        <h3 id="sec-horarios">Escolha o horário</h3>
-
-        <!-- >>> contêiner esperado pelo client.js (volta dele!) <<< -->
-        <div id="timeSelect" class="timeSelect">
-          <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox">
-            <span id="timeLabel" style="font-weight:700">Selecionar horário</span>
-            <span style="font-size:13px;color:var(--muted)">toque para ver</span>
+      <!-- BLOCO 3: HORÁRIOS (apenas quadrinhos) -->
+      <section class="card">
+        <div id="timeSelect" class="timeSelect open">
+          <!-- toggle oculto mas presente -->
+          <button id="timeToggle" class="dateInput" type="button" aria-expanded="true" aria-controls="timeBox" style="display:none">
+            <span id="timeLabel">Selecionar horário</span><span></span>
           </button>
-
           <div id="timeBox" class="timeBox">
             <div id="timeGrid" class="timeGrid"></div>
-            <p class="sub" id="info" style="margin-top:8px">Escolha um dia para ver os horários.</p>
+            <p class="sub" id="info" style="margin-top:8px"></p>
           </div>
         </div>
-
-        <!-- input escondido para lógica -->
         <input type="date" id="data" style="display:none" />
       </section>
 
@@ -162,7 +146,6 @@
     <div class="sheet">
       <h3 id="dlgTitulo">Confirmar</h3>
       <div id="resumo" class="summary"></div>
-
       <form id="formAgendar" class="sheet-form">
         <label class="field">
           <span>Nome</span>
@@ -177,12 +160,11 @@
           <button type="submit" class="primary">Confirmar</button>
         </div>
       </form>
-
       <p id="msg" class="feedback"></p>
     </div>
   </dialog>
 
-  <!-- Modal Tabela de preços -->
+  <!-- Modal Tabela (mantido, mas sem botão para abrir) -->
   <dialog id="dlgTabela">
     <div class="sheet">
       <h3>Tabela de preços</h3>
@@ -202,7 +184,7 @@
     </div>
   </dialog>
 
-  <!-- pequeno helper para harmonizar os serviços -->
+  <!-- helper para estilizar os serviços -->
   <script type="module">
     const observer = new MutationObserver(() => {
       document.querySelectorAll('#services label').forEach(l => {
@@ -213,6 +195,9 @@
       });
     });
     observer.observe(document.getElementById('services'), { childList: true, subtree: true });
+
+    const fechar = document.getElementById('fecharTabela');
+    if (fechar) fechar.onclick = () => document.getElementById('dlgTabela').close();
   </script>
 
   <script type="module" src="./client.js"></script>
