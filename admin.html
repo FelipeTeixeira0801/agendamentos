@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agendamentos — ADM</title>
+<style>
+  body{font-family:system-ui,Arial,sans-serif;max-width:1100px;margin:24px auto;padding:0 16px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  nav a{margin-left:12px}
+  .wrap{display:grid;gap:16px}
+  .card{border:1px solid #ddd;border-radius:12px;padding:16px}
+  label{display:block;margin:8px 0 4px}
+  input,select,button{padding:10px 12px;border-radius:10px;border:1px solid #ddd}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid #eee;padding:10px;text-align:left}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid #ddd}
+  .ok{color:#0a7f2e} .erro{color:#b00020}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+  button.primary{background:#111;color:#fff;border-color:#111}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Área do ADM</h1>
+    <nav>
+      <a href="./index.html">Área do Cliente</a>
+      <button id="btnSair" style="display:none">Sair</button>
+    </nav>
+  </header>
+
+  <div class="wrap">
+
+    <div id="boxLogin" class="card">
+      <h3>Entrar</h3>
+      <form id="formLogin" class="row">
+        <div>
+          <label>E-mail</label>
+          <input type="email" name="email" required />
+        </div>
+        <div>
+          <label>Senha</label>
+          <input type="password" name="senha" required />
+        </div>
+        <div>
+          <button class="primary" type="submit">Entrar</button>
+        </div>
+      </form>
+      <p id="loginMsg"></p>
+    </div>
+
+    <div id="boxPainel" class="card" style="display:none">
+      <h3>Painel de agendamentos</h3>
+
+      <div class="row">
+        <div>
+          <label>Data</label>
+          <input type="date" id="fltData" />
+        </div>
+        <div>
+          <label>Status</label>
+          <select id="fltStatus">
+            <option value="all">Todos</option>
+            <option value="confirmed">Confirmados</option>
+            <option value="canceled">Cancelados</option>
+          </select>
+        </div>
+        <div>
+          <button id="btnAtualizar">Atualizar</button>
+        </div>
+        <div style="margin-left:auto">
+          <span id="adminUid" class="pill"></span>
+        </div>
+      </div>
+
+      <div style="overflow:auto;margin-top:10px">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th><th>Hora</th><th>Cliente</th><th>Telefone</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbl"></tbody>
+        </table>
+      </div>
+
+      <p id="msg" style="margin-top:10px"></p>
+    </div>
+
+  </div>
+
+  <script type="module" src="./firebase-init.js"></script>
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
