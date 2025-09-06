@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=130" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=131" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -65,7 +65,7 @@
   button:hover{border-color:var(--accent)}
   button.timeBtn{width:100%;font-weight:700;min-height:50px}
 
-  /* Modal refinado */
+  /* Modal */
   dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface);color:var(--text);padding:0}
   dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
   .sheet{padding:18px}
@@ -90,13 +90,12 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=130" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=131" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
   </header>
 
-  <!-- ÚNICO CARD: semana + serviços (ACIMA) + horários -->
   <main>
     <section class="card">
       <h3>Agendamento</h3>
@@ -115,7 +114,7 @@
         <span class="dateHint">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
-      <!-- SERVIÇOS (agora acima dos horários) -->
+      <!-- SERVIÇOS (acima dos horários) -->
       <div style="margin-top:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <strong>Serviços</strong>
@@ -140,12 +139,11 @@
         </div>
       </div>
 
-      <!-- input escondido para lógica -->
       <input type="date" id="data" style="display:none" />
     </section>
   </main>
 
-  <!-- Modal confirmação -->
+  <!-- Modal -->
   <dialog id="dlg">
     <div class="sheet">
       <h3 id="dlgTitulo">Confirmar</h3>
