@@ -1,3 +1,5 @@
+import "./firebase-init.js";
+const _fb = window._fb;
 // client.js
 const fmt2 = n => String(n).padStart(2,'0');
 
