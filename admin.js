@@ -1,152 +1,98 @@
-import "./firebase-init.js";     // garante que o init foi carregado
-const _fb = window._fb;          // cria um atalho local para o objeto
-// admin.js
-const fmt2 = n => String(n).padStart(2,'0');
-const todayStr = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${fmt2(d.getMonth()+1)}-${fmt2(d.getDate())}`;
-};
+// admin.js — login centrado no tema dark e checagem de admin
+import { fb as _fb } from "./firebase-init.js";
+import {
+  signInWithEmailAndPassword, onAuthStateChanged,
+  sendPasswordResetEmail, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const boxLogin = document.getElementById('boxLogin');
-const formLogin = document.getElementById('formLogin');
-const loginMsg = document.getElementById('loginMsg');
+const form    = document.getElementById("formLogin");
+const emailEl = document.getElementById("email");
+const passEl  = document.getElementById("senha");
+const btnEntrar  = document.getElementById("btnEntrar");
+const btnMostrar = document.getElementById("btnMostrar");
+const btnReset   = document.getElementById("btnReset");
+const btnSair    = document.getElementById("btnSair");
+const msg     = document.getElementById("msg");
+const panel   = document.getElementById("panel");
+const who     = document.getElementById("who");
 
-const boxPainel = document.getElementById('boxPainel');
-const btnSair = document.getElementById('btnSair');
-const fltData = document.getElementById('fltData');
-const fltStatus = document.getElementById('fltStatus');
-const btnAtualizar = document.getElementById('btnAtualizar');
-const tbl = document.getElementById('tbl');
-const msg = document.getElementById('msg');
-const adminUid = document.getElementById('adminUid');
+function setMsg(text, type){ msg.textContent = text || ""; msg.className = "feedback " + (type || ""); }
+function setLoading(on){
+  btnEntrar.disabled = on;
+  btnEntrar.textContent = on ? "Entrando..." : "Entrar";
+}
 
-let unsub = null;
+btnMostrar.addEventListener("click", ()=>{
+  const isPwd = passEl.type === "password";
+  passEl.type = isPwd ? "text" : "password";
+  btnMostrar.textContent = isPwd ? "Ocultar senha" : "Mostrar senha";
+});
 
-fltData.value = todayStr();
+btnReset.addEventListener("click", async ()=>{
+  const email = emailEl.value.trim();
+  if(!email){ setMsg("Informe seu e-mail para enviar o link de redefinição.", "erro"); return; }
+  try{
+    await sendPasswordResetEmail(_fb.auth, email);
+    setMsg("Enviamos um link de redefinição para o seu e-mail.", "ok");
+  }catch(e){
+    setMsg(e?.message || "Não foi possível enviar o link de redefinição.", "erro");
+  }
+});
 
-formLogin?.addEventListener('submit', async (e)=>{
+form.addEventListener("submit", async (e)=>{
   e.preventDefault();
-  loginMsg.textContent = '';
+  setMsg("", "");
+  setLoading(true);
   try{
-    await _fb.signInWithEmailAndPassword(_fb.auth, e.target.email.value, e.target.senha.value);
-  }catch(err){
-    loginMsg.textContent = (err && err.message) || 'Erro ao entrar.';
-    loginMsg.className = 'erro';
-  }
-});
+    const email = emailEl.value.trim();
+    const senha = passEl.value;
+    const cred  = await signInWithEmailAndPassword(_fb.auth, email, senha);
+    const user  = cred.user;
 
-btnSair.onclick = ()=> _fb.signOut(_fb.auth);
-btnAtualizar.onclick = ()=> montarPainel();
+    // Checa se o UID consta na coleção admins
+    const ref  = _fb.doc(_fb.db, "admins", user.uid);
+    const snap = await _fb.getDoc(ref);
 
-_fb.onAuthStateChanged(_fb.auth, (user)=>{
-  const logado = !!user;
-  boxLogin.style.display = logado ? 'none' : '';
-  boxPainel.style.display = logado ? '' : 'none';
-  btnSair.style.display = logado ? '' : 'none';
-  if(logado){
-    adminUid.textContent = `UID: ${user.uid}`;
-    montarPainel();
-  } else {
-    adminUid.textContent = '';
-    limparTabela();
-    if(typeof unsub === 'function'){ unsub(); unsub = null; }
-  }
-});
-
-function limparTabela(){ tbl.innerHTML = ''; }
-
-function desenharLinha(id, b){
-  const tr = document.createElement('tr');
-  const td = s => { const e=document.createElement('td'); e.innerHTML=s; return e; };
-
-  tr.appendChild(td(b.date));
-  tr.appendChild(td(b.time));
-  tr.appendChild(td(b.name || '-'));
-  tr.appendChild(td(b.phone || '-'));
-  tr.appendChild(td(`<span class="pill">${b.status}</span>`));
-
-  const actions = document.createElement('td');
-
-  const btnCancel = document.createElement('button');
-  btnCancel.textContent = 'Cancelar';
-  btnCancel.onclick = async ()=>{
-    try{
-      await _fb.updateDoc(_fb.doc(_fb.db,'bookings',id), { status: 'canceled' });
-      msg.textContent = 'Agendamento cancelado.';
-      msg.className = 'ok';
-    }catch(err){
-      msg.textContent = 'Erro ao cancelar.';
-      msg.className = 'erro';
+    if(!snap.exists()){
+      await signOut(_fb.auth);
+      setLoading(false);
+      setMsg("Seu usuário não é administrador. Peça acesso ao proprietário (criar admins/{uid} no Firestore).", "erro");
+      return;
     }
-  };
-  btnCancel.disabled = (b.status === 'canceled');
 
-  const btnAlterar = document.createElement('button');
-  btnAlterar.textContent = 'Alterar horário';
-  btnAlterar.style.marginLeft = '6px';
-  btnAlterar.onclick = ()=> alterarHorario(id, b);
-
-  actions.appendChild(btnCancel);
-  actions.appendChild(btnAlterar);
-  tr.appendChild(actions);
-
-  tbl.appendChild(tr);
-}
-
-async function alterarHorario(oldId, b){
-  const novo = prompt(`Novo horário (formato HH:MM, ex 09:30) para ${b.date}`, b.time);
-  if(!novo) return;
-
-  const newId = `${b.date}-${novo.replace(':','')}`;
-  const oldRef = _fb.doc(_fb.db,'bookings',oldId);
-  const newRef = _fb.doc(_fb.db,'bookings',newId);
-
-  try{
-    await _fb.runTransaction(_fb.db, async (tx)=>{
-      const newSnap = await tx.get(newRef);
-      if(newSnap.exists() && newSnap.data().status !== 'canceled'){
-        throw new Error('Novo horário indisponível.');
-      }
-      tx.set(newRef, { ...b, time: novo, status: 'confirmed', createdAt: _fb.serverTimestamp() });
-      tx.update(oldRef, { status: 'canceled' });
-    });
-    msg.textContent = 'Horário alterado com sucesso.';
-    msg.className = 'ok';
-  }catch(err){
-    msg.textContent = err.message || 'Erro ao alterar.';
-    msg.className = 'erro';
+    setMsg("Login realizado com sucesso.", "ok");
+    afterLogin(user);
+  }catch(e){
+    setLoading(false);
+    setMsg(e?.message || "Erro ao entrar.", "erro");
   }
-}
+});
 
-function montarPainel(){
-  if(typeof unsub === 'function'){ unsub(); unsub = null; }
-  limparTabela(); msg.textContent = '';
+btnSair?.addEventListener("click", async ()=>{
+  await signOut(_fb.auth);
+});
 
-  const filtros = [];
-  const d = fltData.value;
-  if(d) filtros.push(_fb.where('date','==', d));
+onAuthStateChanged(_fb.auth, async (user)=>{
+  if(user){
+    // Se recarregar a página e já estiver logado, validamos admin novamente
+    try{
+      const ref  = _fb.doc(_fb.db, "admins", user.uid);
+      const snap = await _fb.getDoc(ref);
+      if(snap.exists()){
+        afterLogin(user);
+        return;
+      }
+    }catch{}
+  }
+  // estado não logado
+  panel.classList.remove("on");
+  form.style.display = "block";
+  setLoading(false);
+});
 
-  let q = _fb.query(
-    _fb.collection(_fb.db,'bookings'),
-    ...filtros,
-    _fb.orderBy('date','asc'),
-    _fb.orderBy('time','asc')
-  );
-
-  unsub = _fb.onSnapshot(q, (snap)=>{
-    limparTabela();
-    let count = 0;
-    snap.forEach(doc=>{
-      const b = doc.data();
-      const statusSel = fltStatus.value;
-      if(statusSel !== 'all' && b.status !== statusSel) return;
-      desenharLinha(doc.id, b);
-      count++;
-    });
-    msg.textContent = `${count} agendamento(s)`;
-    msg.className = '';
-  }, ()=>{
-    msg.textContent = 'Erro ao carregar agendamentos.';
-    msg.className = 'erro';
-  });
+function afterLogin(user){
+  who.textContent = `Logado como: ${user.email}`;
+  panel.classList.add("on");
+  form.style.display = "none";
+  setLoading(false);
 }
