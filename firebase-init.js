@@ -1,48 +1,40 @@
 // firebase-init.js
-// Carregado via: <script type="module" src="./firebase-init.js"></script>
+// Inclua nos HTMLs com: <script type="module" src="./firebase-init.js"></script>
 
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
   getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, runTransaction,
   serverTimestamp, collection, query, where, getDocs, orderBy,
   onSnapshot, updateDoc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+// (Opcional) Analytics — não é necessário para login/Firestore
+// import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
 
-/**
- * 🔧 COLE AQUI O SEU CONFIG (copiado do Console do Firebase)
- * Exemplo de formato:
- * const firebaseConfig = {
- *   apiKey: "AIz...suachave...",
- *   authDomain: "seu-projeto.firebaseapp.com",
- *   projectId: "seu-projeto",
- *   storageBucket: "seu-projeto.appspot.com",
- *   messagingSenderId: "1234567890",
- *   appId: "1:1234567890:web:abcdef123456"
- * };
- */
 const firebaseConfig = {
-  apiKey: "COLE_SUA_API_KEY_AQUI",
-  authDomain: "SEU-PROJETO.firebaseapp.com",
-  projectId: "SEU-PROJETO",
-  storageBucket: "SEU-PROJETO.appspot.com",
-  messagingSenderId: "XXXXXXXXXXXX",
-  appId: "1:XXXXXXXXXXXX:web:YYYYYYYYYYYYYY"
+  apiKey: "AIzaSyByfdSzd0h0wYGMb7FJZx6zP49wQiUJOng",
+  authDomain: "agendamentos-barbearia-3751c.firebaseapp.com",
+  projectId: "agendamentos-barbearia-3751c",
+  storageBucket: "agendamentos-barbearia-3751c.firebasestorage.app",
+  messagingSenderId: "424272717220",
+  appId: "1:424272717220:web:0dccca71524c361fbe8d31",
+  measurementId: "G-TYB71WR997"
 };
 
-// Ajuda de diagnóstico para o erro auth/api-key-not-valid
-if (!firebaseConfig?.apiKey || firebaseConfig.apiKey.includes("COLE_SUA_API_KEY_AQUI")) {
-  console.error(
-    "Firebase: faltando firebaseConfig válido em firebase-init.js (ex.: auth/api-key-not-valid). " +
-    "Pegue o bloco correto em: Configurações do projeto → Seus apps → Web (</>) → Configuração do SDK."
-  );
-}
-
-// Evita inicializar duas vezes se a página importar este arquivo mais de uma vez
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// Evita múltiplas inicializações
+const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app); // opcional
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Logs úteis (veja n
+// Expõe para client.js e admin.js
+window._fb = {
+  app, auth, db,
+  // Auth
+  signInWithEmailAndPassword, onAuthStateChanged, signOut,
+  // Firestore
+  doc, getDoc, setDoc, runTransaction, serverTimestamp,
+  collection, query, where, getDocs, orderBy, onSnapshot, updateDoc, deleteDoc
+};
