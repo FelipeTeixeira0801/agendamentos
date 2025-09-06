@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=123" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=127" />
 <style>
   /* ====== TEMA DARK ====== */
   :root{
@@ -16,16 +16,22 @@
   body{font-family:system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:var(--text)}
   a{color:var(--text);text-decoration:none}
 
-  /* Header com logo */
+  /* Header com logo maior */
   header{
     position:sticky;top:0;z-index:10;background:var(--surface);
     border-bottom:1px solid var(--border);
     padding:10px 14px;display:flex;justify-content:space-between;align-items:center
   }
-  .brand{display:flex;align-items:center;gap:10px}
-  .brand img{width:34px;height:34px;object-fit:cover;border-radius:8px;
-    filter: drop-shadow(0 0 10px rgba(45,212,191,.35));}
-  .brand .name{font-weight:800;letter-spacing:.2px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{
+    width:56px;height:56px;object-fit:cover;border-radius:10px;
+    filter: drop-shadow(0 0 10px rgba(45,212,191,.35));
+  }
+  .brand .name{font-weight:900;letter-spacing:.3px;font-size:24px;line-height:1}
+  @media (max-width:380px){
+    .brand img{width:50px;height:50px}
+    .brand .name{font-size:22px}
+  }
   header .adm{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent}
   header .adm:hover{border-color:var(--accent)}
 
@@ -52,20 +58,20 @@
   }
   .iconBtn:hover{border-color:var(--accent)}
 
-  /* Faixa rolável de dias */
+  /* Faixa rolável (só Ter–Sáb) */
   .weekStrip{
-    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    display:flex; gap:8px; overflow-x:auto; padding:4px 2px 6px;
     -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
+    min-height:74px; /* evita “sumir” no iOS */
   }
   .dayBtn{
-    min-width:60px; scroll-snap-align:center;
+    min-width:64px; scroll-snap-align:center;
     border:1px solid var(--border);border-radius:14px;background:var(--surface-2);
     color:var(--text);padding:10px 8px;display:grid;justify-items:center;gap:4px;cursor:pointer
   }
   .dayBtn .dow{font-size:11px;color:var(--muted)}
   .dayBtn .num{font-weight:800;font-size:16px}
   .dayBtn.active{border-color:var(--accent); box-shadow:0 0 0 2px rgba(45,212,191,.25) inset}
-  .dayBtn.disabled{opacity:.45;cursor:not-allowed}
 
   /* ====== QUADRADO DE HORÁRIOS ====== */
   .timeSelect{margin-top:12px}
@@ -82,17 +88,13 @@
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:820px){.timeGrid{grid-template-columns:repeat(5,1fr)}}
 
-  /* Botões */
   button{
     padding:11px 14px;border-radius:12px;border:1px solid var(--border);
     background:var(--surface-2);color:var(--text);cursor:pointer
   }
   button.ghost{background:transparent}
   button:hover{border-color:var(--accent)}
-  button.timeBtn{
-    width:100%;font-weight:700;font-size:16px; min-height:46px; /* tap-friendly */
-  }
-  button.timeBtn.disabled{background:#19191f;color:#8b8b93;cursor:not-allowed;opacity:.65}
+  button.timeBtn{width:100%;font-weight:700;font-size:16px;min-height:46px}
 
   /* Dialogs */
   dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface-2);color:var(--text)}
@@ -114,7 +116,7 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=123" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=127" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
@@ -125,7 +127,7 @@
     <section class="card">
       <h3>Agendamento</h3>
 
-      <!-- Seletor semanal -->
+      <!-- Seletor semanal (somente Ter–Sáb) -->
       <div class="weekCard">
         <div class="weekHeader">
           <button id="prevWeek" class="iconBtn" title="Semana anterior">‹</button>
@@ -136,7 +138,7 @@
           </div>
         </div>
         <div id="weekGrid" class="weekStrip"></div>
-        <span class="dateHint">Funcionamos de <b>terça a sábado</b>, 08:00–19:00.</span>
+        <span class="dateHint">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
       <!-- Quadradinho dos horários -->
