@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Agendamentos — Cliente</title>
 <style>
-  :root{
-    --border:#e6e6e6;
-    --muted:#666;
-    --bg:#ffffff;
-  }
+  :root{ --border:#e6e6e6; --muted:#666; --bg:#ffffff; }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{font-family:system-ui, Arial, sans-serif; margin:0; background:#fafafa; color:#111}
@@ -22,31 +18,26 @@
   .grid{display:grid; gap:12px}
   @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
-  /* Campo estilo “input grande” (mobile-first) */
   .field{display:grid; gap:6px}
   .field label{font-size:14px; color:#222}
-  .input-like{
-    display:flex; align-items:center; justify-content:space-between;
+  .input-like{ display:flex; align-items:center; justify-content:space-between;
     padding:14px 12px; border:1px solid var(--border); border-radius:12px;
-    background:#fff; font-size:17px;
-  }
+    background:#fff; font-size:17px; width:100%; }
+
   .muted{color:var(--muted); font-size:13px}
 
-  /* “Quadradinho” para abrir horários */
+  /* Quadradinho horários */
   .timeSelect{margin-top:12px}
-  .timeToggle{cursor:pointer}
   .timeBox{display:none; margin-top:10px}
   .timeSelect.open .timeBox{display:block}
 
-  /* Grade de horários (3 colunas no mobile) */
-  .timeGrid{
-    display:grid; gap:8px; grid-template-columns:repeat(3, 1fr);
-  }
+  /* Grade de horários */
+  .timeGrid{ display:grid; gap:8px; grid-template-columns:repeat(3, 1fr); }
   @media (min-width:540px){ .timeGrid{grid-template-columns:repeat(4, 1fr);} }
   @media (min-width:820px){ .timeGrid{grid-template-columns:repeat(5, 1fr);} }
   .timeBtn{
     padding:12px 8px; text-align:center; border:1px solid var(--border);
-    border-radius:12px; background:#fff; font-weight:600; cursor:pointer
+    border-radius:12px; background:#fff; font-weight:600; cursor:pointer; width:100%
   }
   .timeBtn:active{transform:scale(0.98)}
   .timeBtn.disabled{opacity:0.45; cursor:not-allowed}
@@ -67,3 +58,87 @@
   .ok{color:#0a7f2e} .erro{color:#b00020}
 </style>
 </head>
+<body>
+  <header>
+    <strong>Barbearia — Agendar</strong>
+    <a href="./admin.html">Área do ADM</a>
+  </header>
+
+  <main class="grid">
+    <!-- Coluna 1: Data + Horários -->
+    <section class="card">
+      <h3>Agendamento</h3>
+
+      <div class="field">
+        <label for="data">Escolha a data</label>
+        <input type="date" id="data" class="input-like" />
+        <span class="muted">Funcionamos de <b>terça a sábado</b>, 08:00–19:00.</span>
+      </div>
+
+      <div id="timeSelect" class="timeSelect">
+        <!-- transformei o “quadradinho” em <button> acessível -->
+        <button id="timeToggle" class="input-like" type="button" aria-expanded="false" aria-controls="timeBox">
+          <span id="timeLabel">Selecionar horário</span>
+          <span style="font-size:13px; color:var(--muted)">toque para ver</span>
+        </button>
+        <div id="timeBox" class="timeBox">
+          <div id="timeGrid" class="timeGrid"></div>
+          <p class="muted" id="info" style="margin-top:8px">Escolha uma data para ver os horários.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Coluna 2: Serviços -->
+    <section class="card">
+      <h3>Serviços</h3>
+      <div style="margin-bottom:6px">
+        <button class="ghost" id="btnTabela" type="button">Ver tabela de preços</button>
+      </div>
+      <div class="services" id="services"></div>
+      <div class="priceBox">
+        <span class="muted">Selecione pelo menos 1 serviço</span>
+        <span class="total" id="total">Total: R$ 0,00</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de confirmação -->
+  <dialog id="dlg">
+    <div class="box">
+      <h3 id="dlgTitulo">Confirmar agendamento</h3>
+      <p id="resumo"></p>
+      <form id="formAgendar">
+        <input type="text" name="nome" placeholder="Seu nome" required />
+        <input type="tel" name="telefone" placeholder="Seu telefone (WhatsApp)" required />
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button type="button" class="ghost" id="btnCancelar">Voltar</button>
+          <button type="submit">Confirmar</button>
+        </div>
+      </form>
+      <p id="msg" style="margin-top:8px"></p>
+    </div>
+  </dialog>
+
+  <!-- Modal da Tabela de Preços -->
+  <dialog id="dlgTabela">
+    <div class="box">
+      <h3>Tabela de preços</h3>
+      <ul style="list-style:none;padding:0;margin:6px 0">
+        <li>Cabelo — R$ 35,00</li>
+        <li>Barba — R$ 30,00</li>
+        <li>Perfil — R$ 20,00</li>
+        <li>Sobrancelha — R$ 15,00</li>
+        <li>Luzes — R$ 80,00</li>
+        <li>Relaxamento — R$ 50,00</li>
+        <li>Pigmentação — R$ 40,00</li>
+        <li>Platinado — R$ 130,00</li>
+      </ul>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="ghost" id="fecharTabela" type="button">Fechar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="./client.js"></script>
+</body>
+</html>
