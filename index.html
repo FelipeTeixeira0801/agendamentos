@@ -35,10 +35,15 @@
   .grid{display:grid;gap:12px}
   @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
-  /* ====== SELETOR SEMANAL ====== */
+  /* ====== SELETOR SEMANAL (mobile-first) ====== */
   .weekCard{display:grid;gap:10px}
-  .weekHeader{display:flex;align-items:center;justify-content:space-between}
-  .monthLabel{font-weight:800}
+  .weekHeader{
+    display:grid; grid-template-columns:36px 1fr auto; gap:8px; align-items:center;
+  }
+  .monthLabel{
+    text-align:center; font-weight:800; text-transform:capitalize;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
   .weekNav{display:flex;gap:8px}
   .iconBtn{
     display:inline-flex;align-items:center;justify-content:center;
@@ -46,11 +51,15 @@
     background:var(--surface-2);color:var(--text);cursor:pointer
   }
   .iconBtn:hover{border-color:var(--accent)}
-  .weekGrid{
-    display:grid;grid-template-columns:repeat(7,1fr);gap:8px
+
+  /* Faixa rolável de dias */
+  .weekStrip{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
   }
   .dayBtn{
-    width:100%;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);
+    min-width:60px; scroll-snap-align:center;
+    border:1px solid var(--border);border-radius:14px;background:var(--surface-2);
     color:var(--text);padding:10px 8px;display:grid;justify-items:center;gap:4px;cursor:pointer
   }
   .dayBtn .dow{font-size:11px;color:var(--muted)}
@@ -68,13 +77,21 @@
     border:2px solid var(--border); background:var(--surface-2); color:var(--text);
   }
   #timeToggle:focus{outline:none;border-color:var(--accent)}
-  .timeGrid{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+
+  .timeGrid{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:820px){.timeGrid{grid-template-columns:repeat(5,1fr)}}
-  button{padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer}
+
+  /* Botões */
+  button{
+    padding:11px 14px;border-radius:12px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);cursor:pointer
+  }
   button.ghost{background:transparent}
   button:hover{border-color:var(--accent)}
-  button.timeBtn{width:100%;font-weight:700;font-size:16px}
+  button.timeBtn{
+    width:100%;font-weight:700;font-size:16px; min-height:46px; /* tap-friendly */
+  }
   button.timeBtn.disabled{background:#19191f;color:#8b8b93;cursor:not-allowed;opacity:.65}
 
   /* Dialogs */
@@ -114,11 +131,11 @@
           <button id="prevWeek" class="iconBtn" title="Semana anterior">‹</button>
           <div id="monthLabel" class="monthLabel">—</div>
           <div class="weekNav">
-            <button id="btnHoje" class="iconBtn" title="Ir para semana atual">●</button>
+            <button id="btnHoje" class="iconBtn" title="Semana atual">●</button>
             <button id="nextWeek" class="iconBtn" title="Próxima semana">›</button>
           </div>
         </div>
-        <div id="weekGrid" class="weekGrid"></div>
+        <div id="weekGrid" class="weekStrip"></div>
         <span class="dateHint">Funcionamos de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
@@ -134,7 +151,7 @@
         </div>
       </div>
 
-      <!-- input escondido só para reaproveitar a lógica existente -->
+      <!-- input escondido para reaproveitar a lógica -->
       <input type="date" id="data" style="display:none" />
     </section>
 
