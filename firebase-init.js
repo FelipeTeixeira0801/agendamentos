@@ -1,18 +1,17 @@
 // firebase-init.js
-// Este arquivo inicializa o Firebase e EXPORTA "fb".
-// Use em outros arquivos: import { fb } from "./firebase-init.js";
+// Carregado via: <script type="module" src="./firebase-init.js"></script>
 
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+  getAuth
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, runTransaction,
   serverTimestamp, collection, query, where, getDocs, orderBy,
-  onSnapshot, updateDoc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  onSnapshot, updateDoc, deleteDoc, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ⚠️ SEU CONFIG (do console do Firebase)
+/** SEU CONFIG (copiado do Console > Configurações do projeto > Web (</>) ) */
 const firebaseConfig = {
   apiKey: "AIzaSyByfdSzd0h0wYGMb7FJZx6zP49wQiUJOng",
   authDomain: "agendamentos-barbearia-3751c.firebaseapp.com",
@@ -23,20 +22,16 @@ const firebaseConfig = {
   measurementId: "G-TYB71WR997"
 };
 
-// Evita inicializar 2x
+// Evita inicializar duas vezes
 const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Monta um helper único para o resto do site
+// Exporta tudo o que o client usa
 export const fb = {
   app, auth, db,
-  // Auth
-  signInWithEmailAndPassword, onAuthStateChanged, signOut,
-  // Firestore
-  doc, getDoc, setDoc, runTransaction, serverTimestamp,
-  collection, query, where, getDocs, orderBy, onSnapshot, updateDoc, deleteDoc
+  serverTimestamp, Timestamp,      // <<-- Timestamp incluído
+  collection, query, where, getDocs, orderBy,
+  doc, getDoc, setDoc, updateDoc, deleteDoc,
+  runTransaction, onSnapshot
 };
-
-// (opcional) também deixa global para quem já usava window._fb
-window._fb = fb;
