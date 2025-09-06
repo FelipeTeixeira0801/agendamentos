@@ -20,10 +20,12 @@ function isTerSab(date){
   return [2,3,4,5,6].includes(d);
 }
 function geraSlotsDia(date){
+  // Terça (2) até Sábado (6), 08:00 até 19:00 (19:30 NÃO entra)
   if(!isTerSab(date)) return [];
   const slots = [];
-  for(let h=7; h<=18; h++){         // 07:00 até 18:30
+  for(let h=8; h<=19; h++){
     for(let m of [0,30]){
+      if(h===19 && m===30) continue; // último marcável: 19:00
       slots.push(`${fmt2(h)}:${fmt2(m)}`);
     }
   }
@@ -35,10 +37,11 @@ function toDateStr(d){
 
 // ----- ELEMENTOS -----
 const elData = document.getElementById('data');
+const timeSelect = document.getElementById('timeSelect');
+const timeToggle = document.getElementById('timeToggle');
+const timeLabel = document.getElementById('timeLabel');
+const timeGrid = document.getElementById('timeGrid');
 const info = document.getElementById('info');
-const slotsCard = document.getElementById('slotsCard');
-const headerSlots = document.getElementById('abrirSlots');
-const elSlots = document.getElementById('slots');
 
 const servicesWrap = document.getElementById('services');
 const totalEl = document.getElementById('total');
@@ -54,7 +57,7 @@ const dlgTabela = document.getElementById('dlgTabela');
 const btnTabela = document.getElementById('btnTabela');
 const fecharTabela = document.getElementById('fecharTabela');
 
-let agendamentoCtx = null; // {dateStr,timeStr}
+let agendamentoCtx = { dateStr: null, timeStr: null };
 let totalAtual = 0;
 
 // ----- UI INICIAL -----
@@ -62,29 +65,32 @@ let totalAtual = 0;
   const hoje = new Date();
   if(!isTerSab(hoje)){
     const d = hoje.getDay();
-    const delta = (2 - d + 7) % 7 || 2;
+    const delta = (2 - d + 7) % 7 || 2; // próxima terça
     hoje.setDate(hoje.getDate() + delta);
   }
   elData.value = toDateStr(hoje);
-  info.textContent = `Selecione um dia e clique para ver horários`;
+  timeLabel.textContent = 'Selecionar horário';
+  info.textContent = 'Escolha uma data para ver os horários.';
 })();
-elData.addEventListener('change', ()=> {
-  info.textContent = `Exibindo horários de ${elData.value}`;
-  // limpa lista ao trocar data
-  elSlots.innerHTML = '';
-  slotsCard.classList.remove('open');
+elData.addEventListener('change', ()=>{
+  timeLabel.textContent = 'Selecionar horário';
+  agendamentoCtx = { dateStr: null, timeStr: null };
+  carregarSlots(); // recarrega grade
+  timeSelect.classList.add('open'); // abre ao trocar a data
+  timeToggle.setAttribute('aria-expanded','true');
 });
 
-headerSlots.addEventListener('click', async ()=>{
-  await carregarSlots(); 
-  slotsCard.classList.toggle('open');
+timeToggle.addEventListener('click', ()=>{
+  const isOpen = timeSelect.classList.toggle('open');
+  timeToggle.setAttribute('aria-expanded', String(isOpen));
+  if(isOpen) carregarSlots();
 });
 
 btnCancelar.onclick = ()=> dlg.close();
 btnTabela.onclick = ()=> dlgTabela.showModal();
 fecharTabela.onclick = ()=> dlgTabela.close();
 
-// ----- Render serviços + total dinâmico -----
+// ----- Serviços + total -----
 function renderServices(){
   servicesWrap.innerHTML = '';
   Object.entries(SERVICES).forEach(([key, svc])=>{
@@ -118,9 +124,9 @@ function atualizarTotal(){
   totalEl.textContent = `Total: ${BRL.format(totalAtual)}`;
 }
 
-// ----- Carregar horários do dia -----
+// ----- Carregar horários do dia (gera grade de botões) -----
 async function carregarSlots(){
-  elSlots.innerHTML = '';
+  timeGrid.innerHTML = '';
   msg.textContent = '';
 
   const dateStr = elData.value;
@@ -128,8 +134,10 @@ async function carregarSlots(){
   const slots = geraSlotsDia(data);
 
   if(slots.length === 0){
-    elSlots.innerHTML = `<li>Escolha uma data de terça a sábado.</li>`;
+    info.textContent = 'Escolha uma data de terça a sábado.';
     return;
+  } else {
+    info.textContent = `Horários de ${dateStr}`;
   }
 
   const q = _fb.query(
@@ -141,89 +149,25 @@ async function carregarSlots(){
   const ocupados = {};
   snap.forEach(d => {
     const b = d.data();
-    if(b.status !== 'canceled') ocupados[b.time] = b;
+    if(b.status !== 'canceled') ocupados[b.time] = true;
   });
 
   for(const t of slots){
-    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'timeBtn';
+    btn.textContent = t;
+
     if(ocupados[t]){
-      li.textContent = `${t} — OCUPADO`;
-      li.classList.add('ocupado');
+      btn.classList.add('disabled');
+      btn.disabled = true;
     } else {
-      li.textContent = `${t} — LIVRE`;
-      li.onclick = () => abrirConfirmacao(dateStr, t);
+      btn.onclick = ()=> onEscolherHorario(dateStr, t);
     }
-    elSlots.appendChild(li);
+
+    timeGrid.appendChild(btn);
   }
 }
 
-function abrirConfirmacao(dateStr, timeStr){
-  const sel = servicosSelecionados();
-  if(sel.length === 0){
-    alert('Selecione pelo menos 1 serviço antes de escolher o horário.');
-    return;
-  }
-  agendamentoCtx = {dateStr, timeStr, sel, total: calcularTotal(sel)};
-  dlgTitulo.textContent = `Confirmar ${dateStr} às ${timeStr}`;
-  resumo.innerHTML = `<b>Serviços:</b> ${sel.map(k=>SERVICES[k].label).join(', ')}<br><b>Total:</b> ${BRL.format(agendamentoCtx.total)}`;
-  formAgendar.reset();
-  msg.textContent = '';
-  dlg.showModal();
-}
-
-// ----- Criar agendamento -----
-formAgendar.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  msg.textContent = '';
-  if(!agendamentoCtx){ msg.textContent = 'Selecione data/horário.'; msg.className='erro'; return; }
-
-  const nome = e.target.nome.value.trim();
-  const telefone = e.target.telefone.value.trim();
-  if(!telefone){ msg.textContent = 'Informe seu telefone (WhatsApp).'; msg.className='erro'; return; }
-
-  try{
-    await confirmarAgendamento({
-      dateStr: agendamentoCtx.dateStr,
-      timeStr: agendamentoCtx.timeStr,
-      nome, telefone,
-      services: agendamentoCtx.sel,
-      total: agendamentoCtx.total
-    });
-    msg.textContent = 'Agendamento confirmado! ✅';
-    msg.className = 'ok';
-    setTimeout(()=>{ dlg.close(); carregarSlots(); }, 900);
-
-    // (opcional) abrir WhatsApp do ADM:
-    // const texto = encodeURIComponent(`Novo agendamento: ${nome} — ${agendamentoCtx.dateStr} ${agendamentoCtx.timeStr}\nServiços: ${agendamentoCtx.sel.map(k=>SERVICES[k].label).join(', ')}\nTotal: ${BRL.format(agendamentoCtx.total)}\nTel: ${telefone}`);
-    // window.open('https://wa.me/5519988924763?text=' + texto, '_blank');
-
-  }catch(err){
-    msg.textContent = (err && err.message) || 'Erro ao agendar.';
-    msg.className = 'erro';
-  }
-});
-
-async function confirmarAgendamento({dateStr,timeStr,nome,telefone,services,total}){
-  const id = `${dateStr}-${timeStr.replace(':','')}`;
-  const ref = _fb.doc(_fb.db,'bookings',id);
-
-  await _fb.runTransaction(_fb.db, async (tx)=>{
-    const snap = await tx.get(ref);
-    if(snap.exists() && snap.data().status !== 'canceled'){
-      throw new Error('Esse horário já foi ocupado.');
-    }
-    const startsAt = new Date(`${dateStr}T${timeStr}:00`);
-    tx.set(ref, {
-      date: dateStr,
-      time: timeStr,
-      startsAt: startsAt.toISOString(),
-      name: nome,
-      phone: telefone,
-      status: 'confirmed',
-      services,                             // array: ["cabelo","barba",...]
-      servicesLabels: services.map(k=>SERVICES[k].label),
-      totalPrice: total,                    // número (em reais)
-      createdAt: _fb.serverTimestamp()
-    });
-  });
-}
+function onEscolherHorario(dateStr, timeStr){
+  const sel = servicosSelecionad
