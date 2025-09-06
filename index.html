@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=129" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=130" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -29,8 +29,6 @@
   main{max-width:880px;margin:12px auto 28px;padding:0 12px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
   .card h3{margin:0 0 12px}
-  .grid{display:grid;gap:14px}
-  @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
   /* Semana (Ter–Sáb) */
   .weekCard{display:grid;gap:10px}
@@ -45,8 +43,16 @@
   .dayBtn .num{font-weight:800;font-size:18px}
   .dayBtn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.25) inset}
 
+  /* Serviços */
+  .services{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  @media (min-width:760px){.services{grid-template-columns:1fr 1fr 1fr 1fr}}
+  .svcItem{border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;background:var(--surface-2);font-size:17px}
+  .priceBox{margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+  .total{font-weight:700;font-size:19px}
+  .dateHint{color:var(--muted);font-size:14px}
+
   /* Horários */
-  .timeSelect{margin-top:12px}
+  .timeSelect{margin-top:16px}
   .timeBox{display:none;margin-top:10px}
   .timeSelect.open .timeBox{display:block}
   #timeToggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:18px 16px;border-radius:14px;cursor:pointer;border:2px solid var(--border);background:var(--surface-2);color:var(--text);font-size:17px}
@@ -59,7 +65,7 @@
   button:hover{border-color:var(--accent)}
   button.timeBtn{width:100%;font-weight:700;min-height:50px}
 
-  /* ===== Modal refinado ===== */
+  /* Modal refinado */
   dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface);color:var(--text);padding:0}
   dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
   .sheet{padding:18px}
@@ -79,27 +85,19 @@
   .feedback{margin-top:10px;font-size:14px}
   .feedback.ok{color:var(--ok)}
   .feedback.erro{color:var(--danger)}
-
-  /* Serviços */
-  .services{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (min-width:760px){.services{grid-template-columns:1fr 1fr 1fr 1fr}}
-  .svcItem{border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;background:var(--surface-2);font-size:17px}
-  .priceBox{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
-  .total{font-weight:700;font-size:19px}
-  .dateHint{color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=129" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=130" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
   </header>
 
-  <main class="grid">
-    <!-- Coluna 1 -->
+  <!-- ÚNICO CARD: semana + serviços (ACIMA) + horários -->
+  <main>
     <section class="card">
       <h3>Agendamento</h3>
 
@@ -117,6 +115,19 @@
         <span class="dateHint">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</span>
       </div>
 
+      <!-- SERVIÇOS (agora acima dos horários) -->
+      <div style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <strong>Serviços</strong>
+          <button class="ghost" id="btnTabela" type="button">Ver tabela de preços</button>
+        </div>
+        <div class="services" id="services"></div>
+        <div class="priceBox">
+          <span class="dateHint">Selecione pelo menos 1 serviço</span>
+          <span class="total" id="total">Total: R$ 0,00</span>
+        </div>
+      </div>
+
       <!-- Horários -->
       <div id="timeSelect" class="timeSelect">
         <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox">
@@ -129,24 +140,12 @@
         </div>
       </div>
 
+      <!-- input escondido para lógica -->
       <input type="date" id="data" style="display:none" />
-    </section>
-
-    <!-- Coluna 2: Serviços -->
-    <section class="card">
-      <h3>Serviços</h3>
-      <div style="margin-bottom:6px">
-        <button class="ghost" id="btnTabela" type="button">Ver tabela de preços</button>
-      </div>
-      <div class="services" id="services"></div>
-      <div class="priceBox">
-        <span class="dateHint">Selecione pelo menos 1 serviço</span>
-        <span class="total" id="total">Total: R$ 0,00</span>
-      </div>
     </section>
   </main>
 
-  <!-- ===== Modal ===== -->
+  <!-- Modal confirmação -->
   <dialog id="dlg">
     <div class="sheet">
       <h3 id="dlgTitulo">Confirmar</h3>
