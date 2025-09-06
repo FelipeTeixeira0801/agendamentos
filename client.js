@@ -16,6 +16,13 @@ const SERVICES = {
 };
 
 function isTerSab(date){ return [2,3,4,5,6].includes(date.getDay()); }
+function proximaTercaApartir(d){
+  const x = new Date(d);
+  if(isTerSab(x)) return x;
+  const delta = (2 - x.getDay() + 7) % 7 || 2; // próxima terça
+  x.setDate(x.getDate() + delta);
+  return x;
+}
 function geraSlotsDia(date){
   // Terça a sábado, de 08:00 a 19:00, intervalos de 30 min (último: 19:00)
   if(!isTerSab(date)) return [];
@@ -32,6 +39,7 @@ function toDateStr(d){ return `${d.getFullYear()}-${fmt2(d.getMonth()+1)}-${fmt2
 
 // ----- ELEMENTOS -----
 const elData = document.getElementById('data');
+const btnHoje = document.getElementById('btnHoje');
 const timeSelect = document.getElementById('timeSelect');
 const timeToggle = document.getElementById('timeToggle');
 const timeLabel = document.getElementById('timeLabel');
@@ -56,12 +64,7 @@ let agendamentoCtx = { dateStr: null, timeStr: null };
 
 // ----- UI INICIAL -----
 (function initDate(){
-  const hoje = new Date();
-  if(!isTerSab(hoje)){
-    const d = hoje.getDay();
-    const delta = (2 - d + 7) % 7 || 2; // próxima terça
-    hoje.setDate(hoje.getDate() + delta);
-  }
+  const hoje = proximaTercaApartir(new Date());
   elData.value = toDateStr(hoje);
   // abre horários ao carregar
   timeSelect.classList.add('open');
@@ -73,6 +76,17 @@ elData.addEventListener('change', ()=>{
   agendamentoCtx = { dateStr: null, timeStr: null };
   timeSelect.classList.add('open');
   timeToggle.setAttribute('aria-expanded','true');
+  carregarSlots();
+});
+btnHoje?.addEventListener('click', ()=>{
+  const hoje = proximaTercaApartir(new Date());
+  elData.value = toDateStr(hoje);
+  timeLabel.textContent = 'Selecionar horário';
+  agendamentoCtx = { dateStr: null, timeStr: null };
+  if(!timeSelect.classList.contains('open')){
+    timeSelect.classList.add('open');
+    timeToggle.setAttribute('aria-expanded','true');
+  }
   carregarSlots();
 });
 
