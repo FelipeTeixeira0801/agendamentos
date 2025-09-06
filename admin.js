@@ -1,3 +1,5 @@
+import "./firebase-init.js";     // garante que o init foi carregado
+const _fb = window._fb;          // cria um atalho local para o objeto
 // admin.js
 const fmt2 = n => String(n).padStart(2,'0');
 const todayStr = () => {
