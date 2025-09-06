@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Agendamentos — Cliente</title>
 <style>
   :root{
@@ -11,129 +11,59 @@
     --bg:#ffffff;
   }
   *{box-sizing:border-box}
-  body{font-family:system-ui,Arial,sans-serif;margin:0;background:#fafafa;color:#111}
-  header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-  header a{color:#111;text-decoration:none;border:1px solid var(--border);padding:8px 12px;border-radius:10px}
-  main{max-width:900px;margin:16px auto;padding:0 12px 32px}
-  .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+  html,body{height:100%}
+  body{font-family:system-ui, Arial, sans-serif; margin:0; background:#fafafa; color:#111}
+  header{position:sticky; top:0; background:#fff; border-bottom:1px solid var(--border);
+    padding:12px 16px; display:flex; justify-content:space-between; align-items:center}
+  header a{color:#111; text-decoration:none; border:1px solid var(--border); padding:8px 12px; border-radius:10px}
+  main{max-width:880px; margin:12px auto 28px; padding:0 12px}
+  .card{background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px}
   .card h3{margin:0 0 10px}
-  .grid{display:grid;gap:12px}
-  @media (min-width:760px){ .grid{grid-template-columns:1fr 1fr} }
+  .grid{display:grid; gap:12px}
+  @media (min-width:820px){ .grid{grid-template-columns:1fr 1fr} }
 
-  /* Calendário grande e “mobile-friendly” */
-  .calendarWrap{display:grid;gap:8px}
-  input[type="date"]{
-    width:100%;padding:14px 12px;font-size:18px;border:1px solid var(--border);border-radius:12px
+  /* Campo estilo “input grande” (mobile-first) */
+  .field{display:grid; gap:6px}
+  .field label{font-size:14px; color:#222}
+  .input-like{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 12px; border:1px solid var(--border); border-radius:12px;
+    background:#fff; font-size:17px;
   }
-  small.muted{color:var(--muted)}
+  .muted{color:var(--muted); font-size:13px}
 
-  /* Quadro de horários “abre ao clicar” */
-  .slotsHead{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
-  .slotsBody{display:none;margin-top:10px}
-  .slots.open .slotsBody{display:block}
-  .pill{border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:14px}
+  /* “Quadradinho” para abrir horários */
+  .timeSelect{margin-top:12px}
+  .timeToggle{cursor:pointer}
+  .timeBox{display:none; margin-top:10px}
+  .timeSelect.open .timeBox{display:block}
 
-  ul#slots{list-style:none;padding:0;margin:0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  ul#slots li{padding:12px;border-bottom:1px solid var(--border);cursor:pointer}
-  ul#slots li:last-child{border-bottom:none}
-  ul#slots li.ocupado{opacity:.4;cursor:not-allowed}
-  ul#slots li:hover{background:#fafafa}
+  /* Grade de horários (3 colunas no mobile) */
+  .timeGrid{
+    display:grid; gap:8px; grid-template-columns:repeat(3, 1fr);
+  }
+  @media (min-width:540px){ .timeGrid{grid-template-columns:repeat(4, 1fr);} }
+  @media (min-width:820px){ .timeGrid{grid-template-columns:repeat(5, 1fr);} }
+  .timeBtn{
+    padding:12px 8px; text-align:center; border:1px solid var(--border);
+    border-radius:12px; background:#fff; font-weight:600; cursor:pointer
+  }
+  .timeBtn:active{transform:scale(0.98)}
+  .timeBtn.disabled{opacity:0.45; cursor:not-allowed}
 
   /* Serviços */
-  .services{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .services{display:grid; grid-template-columns:1fr 1fr; gap:8px}
   @media (min-width:760px){ .services{grid-template-columns:1fr 1fr 1fr 1fr} }
-  .svcItem{border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;background:#fff}
-  .priceBox{margin-top:10px;display:flex;justify-content:space-between;align-items:center}
-  .total{font-weight:700;font-size:18px}
-  button{padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:#111;color:#fff;cursor:pointer}
-  button.ghost{background:#fff;color:#111}
-  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .svcItem{border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; gap:8px; align-items:center; background:#fff}
+  .priceBox{margin-top:10px; display:flex; justify-content:space-between; align-items:center}
+  .total{font-weight:700; font-size:18px}
+  button{padding:11px 14px; border-radius:12px; border:1px solid var(--border); background:#111; color:#fff; cursor:pointer}
+  button.ghost{background:#fff; color:#111}
 
   /* Dialogs */
-  dialog{border:none;border-radius:16px;max-width:520px;width:92%}
+  dialog{border:none; border-radius:16px; max-width:520px; width:92%}
   dialog .box{padding:16px}
-  dialog form{display:grid;gap:10px}
+  dialog form{display:grid; gap:10px}
   .ok{color:#0a7f2e} .erro{color:#b00020}
 </style>
 </head>
-<body>
-  <header>
-    <strong>Barbearia — Agendar</strong>
-    <a href="./admin.html">Área do ADM</a>
-  </header>
-
-  <main class="grid">
-    <!-- Coluna 1: Calendário + horários -->
-    <section class="card">
-      <h3>Calendário</h3>
-      <div class="calendarWrap">
-        <input type="date" id="data" />
-        <small class="muted">Funcionamos de <b>terça a sábado</b>, 07:00–19:00.</small>
-      </div>
-
-      <div id="slotsCard" class="card" style="margin-top:12px">
-        <div class="slotsHead" id="abrirSlots">
-          <h3 style="margin:0">Ver horários disponíveis</h3>
-          <span class="pill" id="info">Escolha uma data</span>
-        </div>
-        <div class="slotsBody">
-          <ul id="slots"></ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Coluna 2: Serviços -->
-    <section class="card">
-      <h3>Serviços</h3>
-      <div class="actions" style="margin-bottom:6px">
-        <button class="ghost" id="btnTabela">Ver tabela de preços</button>
-      </div>
-      <div class="services" id="services"></div>
-      <div class="priceBox">
-        <span class="muted">Selecione pelo menos 1 serviço</span>
-        <span class="total" id="total">Total: R$ 0,00</span>
-      </div>
-    </section>
-  </main>
-
-  <!-- Modal de confirmação -->
-  <dialog id="dlg">
-    <div class="box">
-      <h3 id="dlgTitulo">Confirmar agendamento</h3>
-      <p id="resumo"></p>
-      <form id="formAgendar">
-        <input type="text" name="nome" placeholder="Seu nome" required />
-        <input type="tel" name="telefone" placeholder="Seu telefone (WhatsApp)" required />
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-          <button type="button" class="ghost" id="btnCancelar">Voltar</button>
-          <button type="submit">Confirmar</button>
-        </div>
-      </form>
-      <p id="msg" style="margin-top:8px"></p>
-    </div>
-  </dialog>
-
-  <!-- Modal da Tabela de Preços -->
-  <dialog id="dlgTabela">
-    <div class="box">
-      <h3>Tabela de preços</h3>
-      <ul style="list-style:none;padding:0;margin:6px 0">
-        <li>Cabelo — R$ 35,00</li>
-        <li>Barba — R$ 30,00</li>
-        <li>Perfil — R$ 20,00</li>
-        <li>Sobrancelha — R$ 15,00</li>
-        <li>Luzes — R$ 80,00</li>
-        <li>Relaxamento — R$ 50,00</li>
-        <li>Pigmentação — R$ 40,00</li>
-        <li>Platinado — R$ 130,00</li>
-      </ul>
-      <div style="display:flex;justify-content:flex-end;margin-top:10px">
-        <button class="ghost" id="fecharTabela">Fechar</button>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- Importa apenas o client.js (ele importa firebase-init.js) -->
-  <script type="module" src="./client.js"></script>
-</body>
-</html>
