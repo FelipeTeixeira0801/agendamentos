@@ -1,4 +1,4 @@
-// admin.js — login centrado no tema dark e checagem de admin
+// admin.js
 import { fb as _fb } from "./firebase-init.js";
 import {
   signInWithEmailAndPassword, onAuthStateChanged,
@@ -16,11 +16,8 @@ const msg     = document.getElementById("msg");
 const panel   = document.getElementById("panel");
 const who     = document.getElementById("who");
 
-function setMsg(text, type){ msg.textContent = text || ""; msg.className = "feedback " + (type || ""); }
-function setLoading(on){
-  btnEntrar.disabled = on;
-  btnEntrar.textContent = on ? "Entrando..." : "Entrar";
-}
+function setMsg(t, k){ msg.textContent = t || ""; msg.className = "feedback " + (k||""); }
+function setLoading(on){ btnEntrar.disabled = on; btnEntrar.textContent = on ? "Entrando..." : "Entrar"; }
 
 btnMostrar.addEventListener("click", ()=>{
   const isPwd = passEl.type === "password";
@@ -41,50 +38,49 @@ btnReset.addEventListener("click", async ()=>{
 
 form.addEventListener("submit", async (e)=>{
   e.preventDefault();
-  setMsg("", "");
-  setLoading(true);
+  setMsg("", ""); setLoading(true);
   try{
     const email = emailEl.value.trim();
     const senha = passEl.value;
     const cred  = await signInWithEmailAndPassword(_fb.auth, email, senha);
     const user  = cred.user;
 
-    // Checa se o UID consta na coleção admins
-    const ref  = _fb.doc(_fb.db, "admins", user.uid);
-    const snap = await _fb.getDoc(ref);
-
-    if(!snap.exists()){
-      await signOut(_fb.auth);
-      setLoading(false);
-      setMsg("Seu usuário não é administrador. Peça acesso ao proprietário (criar admins/{uid} no Firestore).", "erro");
-      return;
-    }
-
+    await checkAdmin(user); // pode lançar erro de permissão
     setMsg("Login realizado com sucesso.", "ok");
     afterLogin(user);
   }catch(e){
+    console.error(e?.code, e?.message);
+    if (e?.code === "permission-denied") {
+      setMsg("Permissão negada ao ler /admins. Verifique: 1) App Check OFF em App Check → APIs → Cloud Firestore; 2) Regras publicadas; 3) Documento admins/{UID} existe.", "erro");
+    } else if (e?.message === "NAO_ADMIN") {
+      setMsg("Seu usuário não é administrador. Peça para criarem admins/{seu UID} no Firestore.", "erro");
+    } else {
+      setMsg(e?.message || "Erro ao entrar.", "erro");
+    }
     setLoading(false);
-    setMsg(e?.message || "Erro ao entrar.", "erro");
   }
 });
 
-btnSair?.addEventListener("click", async ()=>{
-  await signOut(_fb.auth);
-});
+async function checkAdmin(user){
+  const ref  = _fb.doc(_fb.db, "admins", user.uid);
+  try{
+    const snap = await _fb.getDoc(ref);
+    if(!snap.exists()) throw new Error("NAO_ADMIN");
+  }catch(err){
+    throw err; // deixa subir pro handler acima
+  }
+}
+
+btnSair?.addEventListener("click", async ()=>{ await signOut(_fb.auth); });
 
 onAuthStateChanged(_fb.auth, async (user)=>{
   if(user){
-    // Se recarregar a página e já estiver logado, validamos admin novamente
     try{
-      const ref  = _fb.doc(_fb.db, "admins", user.uid);
-      const snap = await _fb.getDoc(ref);
-      if(snap.exists()){
-        afterLogin(user);
-        return;
-      }
+      await checkAdmin(user);
+      afterLogin(user);
+      return;
     }catch{}
   }
-  // estado não logado
   panel.classList.remove("on");
   form.style.display = "block";
   setLoading(false);
