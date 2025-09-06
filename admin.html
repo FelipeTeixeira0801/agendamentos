@@ -15,7 +15,6 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui, Arial, sans-serif}
 
-  /* Header */
   header{position:sticky;top:0;z-index:10;background:var(--surface);
     border-bottom:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
   .brand{display:flex;align-items:center;gap:12px}
@@ -25,7 +24,6 @@
   .linkCliente{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent;color:var(--text);text-decoration:none}
   .linkCliente:hover{border-color:var(--accent)}
 
-  /* Layout central */
   .wrap{min-height:calc(100vh - 92px);display:grid;place-items:center;padding:18px}
   .card{width:min(520px, 92vw);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
   .title{margin:0 0 4px;font-size:22px;font-weight:800}
@@ -48,7 +46,6 @@
   .feedback{margin-top:10px;font-size:14px}
   .ok{color:var(--ok)} .erro{color:var(--danger)}
 
-  /* Painel (placeholder) */
   .panel{margin-top:14px;padding:12px;border:1px dashed var(--border);border-radius:12px;background:var(--surface-2);display:none}
   .panel.on{display:block}
 </style>
@@ -86,13 +83,12 @@
 
       <p id="msg" class="feedback"></p>
 
-      <!-- Placeholder do painel (mostra após autenticar e validar admin) -->
       <div id="panel" class="panel">
         <div class="row" style="justify-content:space-between">
           <div class="muted" id="who"></div>
           <button type="button" class="btn" id="btnSair">Sair</button>
         </div>
-        <p class="muted" style="margin-top:8px">Login OK — seu usuário consta em <code>admins/{uid}</code>. Em seguida podemos montar o painel de agendamentos aqui.</p>
+        <p class="muted" style="margin-top:8px">Login OK — seu usuário consta em <code>admins/{uid}</code>. Depois montamos o painel aqui.</p>
       </div>
     </section>
   </main>
