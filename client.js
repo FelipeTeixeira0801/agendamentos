@@ -25,21 +25,16 @@ function proximaTercaApartir(d){
   x.setDate(x.getDate() + delta);
   return x;
 }
-function startOfWeek(d, weekStartsOn=1){ // 1 = segunda
-  const x = new Date(d); x.setHours(0,0,0,0);
-  const diff = (x.getDay() - weekStartsOn + 7) % 7;
-  x.setDate(x.getDate() - diff);
-  return x;
-}
-function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function startOfWeek(d, weekStartsOn=1){ const x=new Date(d); x.setHours(0,0,0,0); const diff=(x.getDay()-weekStartsOn+7)%7; x.setDate(x.getDate()-diff); return x; }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function sameYMD(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function monthLabel(d){ return new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(d); }
 function toDateStr(d){ return `${d.getFullYear()}-${fmt2(d.getMonth()+1)}-${fmt2(d.getDate())}`; }
 
 function geraSlotsDia(date){
   if(!isTerSab(date)) return [];
-  const slots = [];
-  for(let h=8; h<=19; h++){
+  const slots=[];
+  for(let h=8;h<=19;h++){
     for(const m of [0,30]){
       if(h===19 && m===30) continue; // último 19:00
       slots.push(`${fmt2(h)}:${fmt2(m)}`);
@@ -80,14 +75,13 @@ let selectedDate;        // Date
 let currentWeekStart;    // Date (segunda)
 let unsubSlots = null;   // onSnapshot
 
-// ----- Inicialização: seleciona hoje (ou próxima terça) -----
+// ----- Inicialização -----
 (function init(){
   selectedDate = proximaTercaApartir(new Date());
   currentWeekStart = startOfWeek(selectedDate,1);
   elData.value = toDateStr(selectedDate);
 
   renderWeek();
-  // abre horários ao carregar
   timeSelect.classList.add('open');
   timeToggle.setAttribute('aria-expanded','true');
   iniciarListenerDeSlots(elData.value);
@@ -96,7 +90,6 @@ let unsubSlots = null;   // onSnapshot
 // Navegação semanal
 btnPrevWeek.onclick = ()=>{
   currentWeekStart = addDays(currentWeekStart,-7);
-  // mantém o mesmo dia da semana, mas se cair fora (dom/seg) ajusta para terça
   const tentative = addDays(selectedDate,-7);
   selectedDate = isTerSab(tentative) ? tentative : proximaTercaApartir(currentWeekStart);
   elData.value = toDateStr(selectedDate);
@@ -119,7 +112,7 @@ btnHoje.onclick = ()=>{
   iniciarListenerDeSlots(elData.value);
 };
 
-// Renderiza a barra semanal
+// Renderiza a faixa semanal (rolável)
 function renderWeek(){
   weekGrid.innerHTML = '';
   monthLbl.textContent = monthLabel(selectedDate);
@@ -135,7 +128,6 @@ function renderWeek(){
       <span class="num">${d.getDate()}</span>
     `;
 
-    // desabilita dias fora de terça–sábado
     if(!isTerSab(d)){
       btn.classList.add('disabled');
       btn.disabled = true;
@@ -192,10 +184,7 @@ function atualizarTotal(){
 
 // ===== Tempo real: mostra apenas horários livres =====
 function iniciarListenerDeSlots(dateStr){
-  // fecha listener anterior
   if(typeof unsubSlots==='function'){ unsubSlots(); unsubSlots=null; }
-
-  // limpa grade enquanto carrega
   renderSlots(dateStr, new Set());
 
   const d = new Date(dateStr+'T00:00:00');
@@ -245,7 +234,7 @@ function onEscolherHorario(dateStr, timeStr){
   abrirConfirmacao(dateStr, timeStr, sel);
 }
 
-const dlgTabela = document.getElementById('dlgTabela');
+// ----- Dialog / confirmação -----
 btnCancelar.onclick = ()=> dlg.close();
 btnTabela.onclick = ()=> dlgTabela.showModal();
 fecharTabela.onclick = ()=> dlgTabela.close();
@@ -281,7 +270,7 @@ formAgendar.addEventListener('submit', async (e)=>{
     });
     msg.textContent = 'Agendamento confirmado! ✅';
     msg.className = 'ok';
-    setTimeout(()=>{ dlg.close(); /* snapshot atualiza */ }, 900);
+    setTimeout(()=>{ dlg.close(); /* snapshot já atualiza */ }, 900);
   }catch(err){
     msg.textContent = (err && err.message) || 'Erro ao agendar.'; msg.className='erro';
   }
