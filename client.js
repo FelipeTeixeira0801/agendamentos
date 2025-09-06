@@ -15,9 +15,8 @@ const SERVICES = {
   platinado: { label: "Platinado", price: 130 },
 };
 
-const DOW_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; // semana começando na segunda
-
-function isTerSab(date){ return [2,3,4,5,6].includes(date.getDay()); }
+/** utilitários de data **/
+function isTerSab(date){ return [2,3,4,5,6].includes(date.getDay()); } // Tue..Sat
 function proximaTercaApartir(d){
   const x = new Date(d);
   if(isTerSab(x)) return x;
@@ -25,7 +24,12 @@ function proximaTercaApartir(d){
   x.setDate(x.getDate() + delta);
   return x;
 }
-function startOfWeek(d, weekStartsOn=1){ const x=new Date(d); x.setHours(0,0,0,0); const diff=(x.getDay()-weekStartsOn+7)%7; x.setDate(x.getDate()-diff); return x; }
+function startOfWeek(d, weekStartsOn=1){ // 1 = segunda
+  const x = new Date(d); x.setHours(0,0,0,0);
+  const diff = (x.getDay() - weekStartsOn + 7) % 7;
+  x.setDate(x.getDate() - diff);
+  return x;
+}
 function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function sameYMD(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function monthLabel(d){ return new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(d); }
@@ -43,7 +47,7 @@ function geraSlotsDia(date){
   return slots;
 }
 
-// ----- ELEMENTOS -----
+/** elementos **/
 const weekGrid = document.getElementById('weekGrid');
 const monthLbl = document.getElementById('monthLabel');
 const btnPrevWeek = document.getElementById('prevWeek');
@@ -71,11 +75,16 @@ const dlgTabela = document.getElementById('dlgTabela');
 const btnTabela = document.getElementById('btnTabela');
 const fecharTabela = document.getElementById('fecharTabela');
 
+/** estado **/
 let selectedDate;        // Date
-let currentWeekStart;    // Date (segunda)
+let currentWeekStart;    // segunda-feira da semana atual
 let unsubSlots = null;   // onSnapshot
 
-// ----- Inicialização -----
+// offsets Ter..Sáb a partir da segunda (1..5)
+const WEEK_OFFSETS = [1,2,3,4,5];
+const DOW_LABELS = ['Ter','Qua','Qui','Sex','Sáb'];
+
+/** inicialização **/
 (function init(){
   selectedDate = proximaTercaApartir(new Date());
   currentWeekStart = startOfWeek(selectedDate,1);
@@ -87,19 +96,19 @@ let unsubSlots = null;   // onSnapshot
   iniciarListenerDeSlots(elData.value);
 })();
 
-// Navegação semanal
+/** navegação semanal **/
 btnPrevWeek.onclick = ()=>{
+  const prevIdx = Math.max(0, Math.min(4, selectedDate.getDay()-2)); // 0..4
   currentWeekStart = addDays(currentWeekStart,-7);
-  const tentative = addDays(selectedDate,-7);
-  selectedDate = isTerSab(tentative) ? tentative : proximaTercaApartir(currentWeekStart);
+  selectedDate = addDays(currentWeekStart, WEEK_OFFSETS[prevIdx]);
   elData.value = toDateStr(selectedDate);
   renderWeek();
   iniciarListenerDeSlots(elData.value);
 };
 btnNextWeek.onclick = ()=>{
+  const prevIdx = Math.max(0, Math.min(4, selectedDate.getDay()-2));
   currentWeekStart = addDays(currentWeekStart, 7);
-  const tentative = addDays(selectedDate,7);
-  selectedDate = isTerSab(tentative) ? tentative : proximaTercaApartir(currentWeekStart);
+  selectedDate = addDays(currentWeekStart, WEEK_OFFSETS[prevIdx]);
   elData.value = toDateStr(selectedDate);
   renderWeek();
   iniciarListenerDeSlots(elData.value);
@@ -112,13 +121,13 @@ btnHoje.onclick = ()=>{
   iniciarListenerDeSlots(elData.value);
 };
 
-// Renderiza a faixa semanal (rolável)
+/** render da faixa Ter–Sáb **/
 function renderWeek(){
   weekGrid.innerHTML = '';
   monthLbl.textContent = monthLabel(selectedDate);
 
-  for(let i=0;i<7;i++){
-    const d = addDays(currentWeekStart, i);
+  WEEK_OFFSETS.forEach((off, i)=>{
+    const d = addDays(currentWeekStart, off);
     const btn = document.createElement('button');
     btn.className = 'dayBtn';
     btn.type = 'button';
@@ -127,32 +136,25 @@ function renderWeek(){
       <span class="dow">${DOW_LABELS[i]}</span>
       <span class="num">${d.getDate()}</span>
     `;
-
-    if(!isTerSab(d)){
-      btn.classList.add('disabled');
-      btn.disabled = true;
-    }else{
-      btn.onclick = ()=> {
-        selectedDate = d;
-        elData.value = btn.dataset.date;
-        renderWeek();
-        iniciarListenerDeSlots(elData.value);
-      };
-    }
-
+    btn.onclick = ()=>{
+      selectedDate = d;
+      elData.value = btn.dataset.date;
+      renderWeek();
+      iniciarListenerDeSlots(elData.value);
+    };
     if(sameYMD(d, selectedDate)) btn.classList.add('active');
     weekGrid.appendChild(btn);
-  }
+  });
 }
 
-// ----- Abrir/fechar caixa dos horários -----
+/** abre/fecha caixa de horários **/
 timeToggle.addEventListener('click', ()=>{
   const isOpen = timeSelect.classList.toggle('open');
   timeToggle.setAttribute('aria-expanded', String(isOpen));
   if(isOpen) iniciarListenerDeSlots(elData.value);
 });
 
-// ----- Serviços + total -----
+/** serviços + total **/
 function renderServices(){
   servicesWrap.innerHTML = '';
   Object.entries(SERVICES).forEach(([key, svc])=>{
@@ -175,14 +177,10 @@ renderServices();
 function servicosSelecionados(){
   return Array.from(document.querySelectorAll('input[name=servico]:checked')).map(el=>el.value);
 }
-function calcularTotal(sel){
-  return sel.reduce((sum,k)=> sum+(SERVICES[k]?.price||0), 0);
-}
-function atualizarTotal(){
-  totalEl.textContent = `Total: ${BRL.format(calcularTotal(servicosSelecionados()))}`;
-}
+function calcularTotal(sel){ return sel.reduce((s,k)=> s+(SERVICES[k]?.price||0), 0); }
+function atualizarTotal(){ totalEl.textContent = `Total: ${BRL.format(calcularTotal(servicosSelecionados()))}`; }
 
-// ===== Tempo real: mostra apenas horários livres =====
+/** tempo real: mostra apenas horários livres **/
 function iniciarListenerDeSlots(dateStr){
   if(typeof unsubSlots==='function'){ unsubSlots(); unsubSlots=null; }
   renderSlots(dateStr, new Set());
@@ -234,7 +232,7 @@ function onEscolherHorario(dateStr, timeStr){
   abrirConfirmacao(dateStr, timeStr, sel);
 }
 
-// ----- Dialog / confirmação -----
+/** dialogs **/
 btnCancelar.onclick = ()=> dlg.close();
 btnTabela.onclick = ()=> dlgTabela.showModal();
 fecharTabela.onclick = ()=> dlgTabela.close();
@@ -248,7 +246,7 @@ function abrirConfirmacao(dateStr, timeStr, sel){
   dlg.showModal();
 }
 
-// ----- Criar agendamento -----
+/** criar agendamento **/
 formAgendar.addEventListener('submit', async (e)=>{
   e.preventDefault();
   msg.textContent = '';
@@ -270,7 +268,7 @@ formAgendar.addEventListener('submit', async (e)=>{
     });
     msg.textContent = 'Agendamento confirmado! ✅';
     msg.className = 'ok';
-    setTimeout(()=>{ dlg.close(); /* snapshot já atualiza */ }, 900);
+    setTimeout(()=>{ dlg.close(); /* snapshot atualiza */ }, 900);
   }catch(err){
     msg.textContent = (err && err.message) || 'Erro ao agendar.'; msg.className='erro';
   }
