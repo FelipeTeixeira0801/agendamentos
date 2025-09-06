@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=135" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=136" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -55,9 +55,8 @@
 
   /* Horários */
   .timeSelect{margin-top:2px}
-  /* botão de abrir/fechar ficará oculto, mas existe no DOM pra não quebrar o JS */
-  #timeToggle{display:none}
-  .timeBox{display:block;margin-top:0} /* sempre aberto */
+  #timeToggle{display:none}  /* sem texto; grid sempre aberta */
+  .timeBox{display:block;margin-top:0}
   .timeGrid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:900px){.timeGrid{grid-template-columns:repeat(6,1fr)}}
@@ -91,7 +90,8 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=135" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=136" alt="Logo AgendApp" />
+      <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
   </header>
@@ -114,7 +114,6 @@
 
       <!-- BLOCO 2: SERVIÇOS (sem títulos/botão) -->
       <section class="card">
-        <!-- botão da tabela existe porém oculto para não quebrar o client.js -->
         <button id="btnTabela" class="ghost" type="button" style="display:none">Tabela</button>
         <div class="servicesGrid" id="services"></div>
         <div class="priceRow">
@@ -126,7 +125,6 @@
       <!-- BLOCO 3: HORÁRIOS (apenas quadrinhos) -->
       <section class="card">
         <div id="timeSelect" class="timeSelect open">
-          <!-- toggle oculto mas presente -->
           <button id="timeToggle" class="dateInput" type="button" aria-expanded="true" aria-controls="timeBox" style="display:none">
             <span id="timeLabel">Selecionar horário</span><span></span>
           </button>
@@ -164,7 +162,7 @@
     </div>
   </dialog>
 
-  <!-- Modal Tabela (mantido, mas sem botão para abrir) -->
+  <!-- Modal Tabela (mantido, sem botão público) -->
   <dialog id="dlgTabela">
     <div class="sheet">
       <h3>Tabela de preços</h3>
