@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.94, viewport-fit=cover" />
 <title>AgendApp — Cliente</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=132" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=133" />
 <style>
   :root{
     --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
@@ -16,7 +16,6 @@
   body{font-family:system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:var(--text);font-size:17px}
   a{color:var(--text);text-decoration:none}
 
-  /* ===== Header ===== */
   header{position:sticky;top:0;z-index:10;background:var(--surface);
     border-bottom:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
   .brand{display:flex;align-items:center;gap:12px}
@@ -26,78 +25,50 @@
   header .adm{border:1px solid var(--border);padding:8px 12px;border-radius:10px;background:transparent}
   header .adm:hover{border-color:var(--accent)}
 
-  /* ===== Layout geral ===== */
   .container{max-width:960px;margin:12px auto 28px;padding:0 12px}
   .stack{display:grid;gap:16px}
-
-  .card{
-    background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;
-  }
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
   .card h3{margin:0 0 8px}
   .sub{color:var(--muted);font-size:14px;margin:2px 0 10px}
 
-  /* ===== Bloco 1 – DATA (semana Ter–Sáb) ===== */
-  .weekHeader{
-    display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;margin-bottom:8px;
-  }
-  .monthLabel{
-    text-align:center;font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px
-  }
+  /* Data (semana) */
+  .weekHeader{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;margin-bottom:8px;}
+  .monthLabel{text-align:center;font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
   .weekNav{display:flex;gap:8px}
   .iconBtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:18px}
   .iconBtn:hover{border-color:var(--accent)}
-
-  .weekStrip{
-    display:flex;gap:10px;overflow-x:auto;padding:6px 2px 8px;
-    -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;min-height:82px;
-  }
-  .dayBtn{
-    min-width:70px;scroll-snap-align:center;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);
-    color:var(--text);padding:12px 10px;display:grid;justify-items:center;gap:4px;cursor:pointer
-  }
+  .weekStrip{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 8px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;min-height:82px;}
+  .dayBtn{min-width:70px;scroll-snap-align:center;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);color:var(--text);padding:12px 10px;display:grid;justify-items:center;gap:4px;cursor:pointer}
   .dayBtn .dow{font-size:12px;color:var(--muted)}
   .dayBtn .num{font-weight:800;font-size:18px}
   .dayBtn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.25) inset}
 
-  /* ===== Bloco 2 – SERVIÇOS ===== */
+  /* Serviços */
   .servicesGrid{display:grid;gap:10px}
-  /* 1 coluna no celular; cresce com a tela */
   @media (min-width:480px){ .servicesGrid{grid-template-columns:1fr 1fr} }
   @media (min-width:840px){ .servicesGrid{grid-template-columns:1fr 1fr 1fr 1fr} }
-
-  .svcItem{
-    border:1px solid var(--border);border-radius:12px;background:var(--surface-2);
-    display:flex;align-items:center;gap:10px;padding:10px 12px;
-  }
+  .svcItem{border:1px solid var(--border);border-radius:12px;background:var(--surface-2);display:flex;align-items:center;gap:10px;padding:10px 12px;}
   .svcItem > input{accent-color:var(--accent);transform:scale(1.1)}
   .svcLabel{flex:1;min-width:0}
   .svcPrice{font-weight:700;white-space:nowrap}
-
-  .priceRow{
-    margin-top:8px;display:flex;justify-content:space-between;align-items:center;
-  }
+  .priceRow{margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
   .total{font-weight:800;font-size:19px}
 
-  /* ===== Bloco 3 – HORÁRIOS ===== */
-  #timeToggle{
-    width:100%;display:flex;justify-content:space-between;align-items:center;
-    padding:16px;border-radius:14px;border:2px solid var(--border);
-    background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px
-  }
+  /* Horários */
+  .timeSelect{margin-top:2px}
+  #timeToggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:14px;border:2px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px}
   #timeToggle:hover{border-color:var(--accent)}
   .timeBox{display:none;margin-top:10px}
   .timeSelect.open .timeBox{display:block}
-
   .timeGrid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
   @media (min-width:540px){.timeGrid{grid-template-columns:repeat(4,1fr)}}
   @media (min-width:900px){.timeGrid{grid-template-columns:repeat(6,1fr)}}
-
   button{padding:12px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-size:17px}
   button.ghost{background:transparent}
   button:hover{border-color:var(--accent)}
   .timeBtn{width:100%;font-weight:700;min-height:50px}
 
-  /* ===== Modal ===== */
+  /* Modal */
   dialog{border:none;border-radius:16px;max-width:520px;width:92%;background:var(--surface);color:var(--text);padding:0}
   dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
   .sheet{padding:18px}
@@ -122,7 +93,7 @@
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=132" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=133" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
     <a class="adm" href="./admin.html">Área do ADM</a>
@@ -131,7 +102,7 @@
   <main class="container">
     <div class="stack">
 
-      <!-- ===== BLOCO 1: DATA ===== -->
+      <!-- BLOCO 1: DATA -->
       <section class="card" aria-labelledby="sec-data">
         <h3 id="sec-data">Escolha a data</h3>
         <p class="sub">Atendimento de <b>terça a sábado</b>, 08:00–19:00.</p>
@@ -148,7 +119,7 @@
         <div id="weekGrid" class="weekStrip"></div>
       </section>
 
-      <!-- ===== BLOCO 2: SERVIÇOS ===== -->
+      <!-- BLOCO 2: SERVIÇOS -->
       <section class="card" aria-labelledby="sec-servicos">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <h3 id="sec-servicos" style="margin:0">Escolha os serviços</h3>
@@ -162,18 +133,21 @@
         </div>
       </section>
 
-      <!-- ===== BLOCO 3: HORÁRIOS ===== -->
+      <!-- BLOCO 3: HORÁRIOS -->
       <section class="card" aria-labelledby="sec-horarios">
         <h3 id="sec-horarios">Escolha o horário</h3>
 
-        <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox">
-          <span id="timeLabel" style="font-weight:700">Selecionar horário</span>
-          <span style="font-size:13px;color:var(--muted)">toque para ver</span>
-        </button>
+        <!-- >>> contêiner esperado pelo client.js (volta dele!) <<< -->
+        <div id="timeSelect" class="timeSelect">
+          <button id="timeToggle" class="dateInput" type="button" aria-expanded="false" aria-controls="timeBox">
+            <span id="timeLabel" style="font-weight:700">Selecionar horário</span>
+            <span style="font-size:13px;color:var(--muted)">toque para ver</span>
+          </button>
 
-        <div id="timeBox" class="timeBox">
-          <div id="timeGrid" class="timeGrid"></div>
-          <p class="sub" id="info" style="margin-top:8px">Escolha um dia para ver os horários.</p>
+          <div id="timeBox" class="timeBox">
+            <div id="timeGrid" class="timeGrid"></div>
+            <p class="sub" id="info" style="margin-top:8px">Escolha um dia para ver os horários.</p>
+          </div>
         </div>
 
         <!-- input escondido para lógica -->
@@ -183,7 +157,7 @@
     </div>
   </main>
 
-  <!-- ===== Modal confirmação ===== -->
+  <!-- Modal confirmação -->
   <dialog id="dlg">
     <div class="sheet">
       <h3 id="dlgTitulo">Confirmar</h3>
@@ -208,7 +182,7 @@
     </div>
   </dialog>
 
-  <!-- ===== Modal Tabela de preços ===== -->
+  <!-- Modal Tabela de preços -->
   <dialog id="dlgTabela">
     <div class="sheet">
       <h3>Tabela de preços</h3>
@@ -228,9 +202,8 @@
     </div>
   </dialog>
 
+  <!-- pequeno helper para harmonizar os serviços -->
   <script type="module">
-    // pequeno ajuste visual: renderiza cada serviço como linha limpa (label + preço)
-    // (o client.js só injeta o HTML básico; aqui reforçamos classes para manter harmonia)
     const observer = new MutationObserver(() => {
       document.querySelectorAll('#services label').forEach(l => {
         l.classList.add('svcItem');
