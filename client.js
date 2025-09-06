@@ -138,4 +138,104 @@ async function carregarSlots(){
   let ocupados = {};
   try{
     const q = _fb.query(
-      _fb._
+      _fb.collection(_fb.db,'bookings'),
+      _fb.where('date','==',dateStr),
+      _fb.orderBy('time','asc')
+    );
+    const snap = await _fb.getDocs(q);
+    snap.forEach(d => {
+      const b = d.data();
+      if(b.status !== 'canceled') ocupados[b.time] = true;
+    });
+  }catch(e){
+    console.warn('Falha ao consultar Firestore. Exibindo horários sem marcação de ocupados.', e?.message || e);
+  }
+
+  for(const t of slots){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'timeBtn';
+    btn.textContent = t;
+
+    if(ocupados[t]){
+      btn.classList.add('disabled');
+      btn.disabled = true;
+    } else {
+      btn.onclick = ()=> onEscolherHorario(dateStr, t);
+    }
+    timeGrid.appendChild(btn);
+  }
+}
+
+function onEscolherHorario(dateStr, timeStr){
+  const sel = servicosSelecionados();
+  if(sel.length === 0){
+    alert('Selecione pelo menos 1 serviço antes de escolher o horário.');
+    return;
+  }
+  agendamentoCtx = { dateStr, timeStr };
+  timeLabel.textContent = `Horário: ${timeStr}`;
+  abrirConfirmacao(dateStr, timeStr, sel);
+}
+
+function abrirConfirmacao(dateStr, timeStr, sel){
+  const total = calcularTotal(sel);
+  dlgTitulo.textContent = `Confirmar ${dateStr} às ${timeStr}`;
+  resumo.innerHTML = `<b>Serviços:</b> ${sel.map(k=>SERVICES[k].label).join(', ')}<br><b>Total:</b> ${BRL.format(total)}`;
+  formAgendar.reset();
+  msg.textContent = '';
+  dlg.showModal();
+}
+
+// ----- Criar agendamento -----
+formAgendar.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  msg.textContent = '';
+  const { dateStr, timeStr } = agendamentoCtx || {};
+  if(!dateStr || !timeStr){ msg.textContent = 'Selecione data e horário.'; msg.className='erro'; return; }
+
+  const nome = e.target.nome.value.trim();
+  const telefone = e.target.telefone.value.trim();
+  if(!telefone){ msg.textContent = 'Informe seu telefone (WhatsApp).'; msg.className='erro'; return; }
+
+  const sel = servicosSelecionados();
+  if(sel.length === 0){ msg.textContent = 'Selecione ao menos 1 serviço.'; msg.className='erro'; return; }
+
+  try{
+    await confirmarAgendamento({
+      dateStr, timeStr, nome, telefone,
+      services: sel, total: calcularTotal(sel)
+    });
+    msg.textContent = 'Agendamento confirmado! ✅';
+    msg.className = 'ok';
+    setTimeout(()=>{ dlg.close(); carregarSlots(); }, 900);
+  }catch(err){
+    msg.textContent = (err && err.message) || 'Erro ao agendar.';
+    msg.className = 'erro';
+  }
+});
+
+async function confirmarAgendamento({dateStr,timeStr,nome,telefone,services,total}){
+  const id = `${dateStr}-${timeStr.replace(':','')}`;
+  const ref = _fb.doc(_fb.db,'bookings',id);
+
+  await _fb.runTransaction(_fb.db, async (tx)=>{
+    const snap = await tx.get(ref);
+    if(snap.exists() && snap.data().status !== 'canceled'){
+      throw new Error('Esse horário já foi ocupado.');
+    }
+    const startsAt = new Date(`${dateStr}T${timeStr}:00`);
+    tx.set(ref, {
+      date: dateStr,
+      time: timeStr,
+      startsAt: startsAt.toISOString(),
+      name: nome,
+      phone: telefone,
+      status: 'confirmed',
+      services,
+      servicesLabels: services.map(k=>SERVICES[k].label),
+      totalPrice: total,
+      createdAt: _fb.serverTimestamp()
+    });
+  });
+}
