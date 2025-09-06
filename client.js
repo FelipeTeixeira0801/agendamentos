@@ -255,7 +255,7 @@ function abrirConfirmacao(dateStr, timeStr, sel){
   dlg.showModal();
 }
 
-/* ===== Criar agendamento ===== */
+/* ===== Criar agendamento (com Timestamp) ===== */
 formAgendar.addEventListener('submit', async (e)=>{
   e.preventDefault();
   msg.textContent = '';
@@ -295,13 +295,14 @@ async function confirmarAgendamento({dateStr,timeStr,nome,telefone,services,tota
     if(snap.exists() && snap.data().status!=='canceled'){
       throw new Error('Esse horário já foi ocupado.');
     }
-    const startsAt = new Date(`${dateStr}T${timeStr}:00`);
-    const weekday  = startsAt.getDay(); // 0..6
+    // Timestamp do Firestore (exigido pelas regras)
+    const startsAtLocal = new Date(`${dateStr}T${timeStr}:00`);
+    const startsAt      = _fb.Timestamp.fromDate(startsAtLocal);
+    const weekday       = startsAtLocal.getDay(); // 2..6 (Ter..Sáb)
 
     tx.set(ref,{
       date:dateStr, time:timeStr,
-      startsAt: startsAt.toISOString(),
-      weekday,                   // validado nas regras (2..6)
+      startsAt, weekday,
       name:nome, phone:telefone,
       status:'confirmed',
       services,
