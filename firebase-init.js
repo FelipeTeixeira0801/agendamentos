@@ -1,17 +1,16 @@
 // firebase-init.js
-// Carregado via: <script type="module" src="./firebase-init.js"></script>
-
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, runTransaction,
   serverTimestamp, collection, query, where, getDocs, orderBy,
   onSnapshot, updateDoc, deleteDoc, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/** SEU CONFIG (copiado do Console > Configurações do projeto > Web (</>) ) */
+// Opcional (App Check) — deixe comentado até registrar a chave do site:
+// import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js";
+
+/** Config do seu projeto */
 const firebaseConfig = {
   apiKey: "AIzaSyByfdSzd0h0wYGMb7FJZx6zP49wQiUJOng",
   authDomain: "agendamentos-barbearia-3751c.firebaseapp.com",
@@ -22,15 +21,22 @@ const firebaseConfig = {
   measurementId: "G-TYB71WR997"
 };
 
-// Evita inicializar duas vezes
+// Evita inicializar 2x
 const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Exporta tudo o que o client usa
+// App Check (ativa só após registrar a site key no Console de App Check)
+/*
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider("SUA_SITE_KEY_AQUI"),
+  isTokenAutoRefreshEnabled: true
+});
+*/
+
 export const fb = {
   app, auth, db,
-  serverTimestamp, Timestamp,      // <<-- Timestamp incluído
+  serverTimestamp, Timestamp,
   collection, query, where, getDocs, orderBy,
   doc, getDoc, setDoc, updateDoc, deleteDoc,
   runTransaction, onSnapshot
