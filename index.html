@@ -38,27 +38,3 @@
       <p id="info"></p>
     </div>
     <div class="card">
-      <h3>Horários</h3>
-      <ul id="slots"></ul>
-    </div>
-  </div>
-
-  <dialog id="dlg">
-    <div class="box">
-      <h3 id="dlgTitulo">Confirmar agendamento</h3>
-      <form id="formAgendar">
-        <input type="text" name="nome" placeholder="Seu nome" required />
-        <input type="tel" name="telefone" placeholder="Seu telefone (opcional)" />
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-          <button type="button" id="btnCancelar">Fechar</button>
-          <button class="primary" type="submit">Confirmar</button>
-        </div>
-      </form>
-      <p id="msg" style="margin-top:8px"></p>
-    </div>
-  </dialog>
-
-  <script type="module" src="./firebase-init.js"></script>
-  <script type="module" src="./client.js"></script>
-</body>
-</html>
