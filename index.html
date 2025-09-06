@@ -35,12 +35,31 @@
   .timeGrid{ display:grid; gap:8px; grid-template-columns:repeat(3, 1fr); }
   @media (min-width:540px){ .timeGrid{grid-template-columns:repeat(4, 1fr);} }
   @media (min-width:820px){ .timeGrid{grid-template-columns:repeat(5, 1fr);} }
-  .timeBtn{
-    padding:12px 8px; text-align:center; border:1px solid var(--border);
-    border-radius:12px; background:#fff; font-weight:600; cursor:pointer; width:100%
+
+  /* Botões (globais) */
+  button{padding:11px 14px; border-radius:12px; border:1px solid var(--border); background:#111; color:#fff; cursor:pointer}
+  button.ghost{background:#fff; color:#111}
+
+  /* >>> Correção: força texto visível nos horários <<< */
+  button.timeBtn{
+    background:#fff !important;
+    color:#111 !important;
+    border:1px solid var(--border);
+    font-weight:600;
+    width:100%;
   }
-  .timeBtn:active{transform:scale(0.98)}
-  .timeBtn.disabled{opacity:0.45; cursor:not-allowed}
+  button.timeBtn.disabled{
+    background:#f2f2f2 !important;
+    color:#9a9a9a !important;
+    cursor:not-allowed;
+    opacity:.6;
+  }
+
+  /* Dialogs */
+  dialog{border:none; border-radius:16px; max-width:520px; width:92%}
+  dialog .box{padding:16px}
+  dialog form{display:grid; gap:10px}
+  .ok{color:#0a7f2e} .erro{color:#b00020}
 
   /* Serviços */
   .services{display:grid; grid-template-columns:1fr 1fr; gap:8px}
@@ -48,14 +67,6 @@
   .svcItem{border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; gap:8px; align-items:center; background:#fff}
   .priceBox{margin-top:10px; display:flex; justify-content:space-between; align-items:center}
   .total{font-weight:700; font-size:18px}
-  button{padding:11px 14px; border-radius:12px; border:1px solid var(--border); background:#111; color:#fff; cursor:pointer}
-  button.ghost{background:#fff; color:#111}
-
-  /* Dialogs */
-  dialog{border:none; border-radius:16px; max-width:520px; width:92%}
-  dialog .box{padding:16px}
-  dialog form{display:grid; gap:10px}
-  .ok{color:#0a7f2e} .erro{color:#b00020}
 </style>
 </head>
 <body>
@@ -76,7 +87,6 @@
       </div>
 
       <div id="timeSelect" class="timeSelect">
-        <!-- transformei o “quadradinho” em <button> acessível -->
         <button id="timeToggle" class="input-like" type="button" aria-expanded="false" aria-controls="timeBox">
           <span id="timeLabel">Selecionar horário</span>
           <span style="font-size:13px; color:var(--muted)">toque para ver</span>
