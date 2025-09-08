@@ -1,17 +1,25 @@
-// client.js — robusto: renderiza mesmo sem acesso ao Firestore
+// client.js — Cliente (status "pending" até o ADM confirmar)
 import { fb as _fb } from "./firebase-init.js";
 
-const el = (sel) => document.querySelector(sel);
-const weekGrid = el("#weekGrid");
-const monthLabel = el("#monthLabel");
-const prevWeekBtn = el("#prevWeek");
-const nextWeekBtn = el("#nextWeek");
-const btnHoje     = el("#btnHoje");
-const servicesBox = el("#services");
-const totalSpan   = el("#total");
-const timeGrid    = el("#timeGrid");
-const infoP       = el("#info");
-const inputData   = el("#data");
+const $ = (s)=>document.querySelector(s);
+
+// elementos
+const weekGrid   = $("#weekGrid");
+const monthLabel = $("#monthLabel");
+const prevWeekBtn= $("#prevWeek");
+const nextWeekBtn= $("#nextWeek");
+const btnHoje    = $("#btnHoje");
+const servicesBox= $("#services");
+const totalSpan  = $("#total");
+const timeGrid   = $("#timeGrid");
+const infoP      = $("#info");
+const inputData  = $("#data");
+
+// ---------- util ----------
+const fmt = (n) => n.toLocaleString("pt-BR", {style:"currency",currency:"BRL"});
+const toISODate = (d)=> new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const addDays = (d, n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const startOfWeek = (d)=>{ const x=new Date(d); const day=x.getDay(); const diff=(day+6)%7; x.setDate(x.getDate()-diff); return x; }; // segunda
 
 // ---------- serviços ----------
 const SERVICOS = [
@@ -24,7 +32,6 @@ const SERVICOS = [
   { id:"pigmentacao",  nome:"Pigmentação",  preco:40 },
   { id:"platinado",    nome:"Platinado",    preco:130 },
 ];
-const fmt = (n) => n.toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
 
 function renderServicos(){
   servicesBox.innerHTML = "";
@@ -42,6 +49,7 @@ function renderServicos(){
   servicesBox.addEventListener("change", recalcTotal);
   recalcTotal();
 }
+
 function selecionados(){
   return Array.from(servicesBox.querySelectorAll("input[type=checkbox]:checked"))
               .map(ch => ch.value);
@@ -54,15 +62,15 @@ function recalcTotal(){
 
 // ---------- datas (terça a sábado) ----------
 const DIAS_VALIDOS = [2,3,4,5,6]; // Tue..Sat
-function addDays(d, n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
-function startOfWeek(d){ const x=new Date(d); const day=x.getDay(); const diff=(day+6)%7; x.setDate(x.getDate()-diff); return x; } // segunda
+
 function proximoDiaValido(d){
   let x = new Date(d);
-  for(let i=0;i<7;i++){ if (DIAS_VALIDOS.includes(x.getDay())) return x; x=addDays(x,1); }
+  for (let i=0;i<7;i++){ if (DIAS_VALIDOS.includes(x.getDay())) return x; x=addDays(x,1); }
   return new Date(d);
 }
+
 let selectedDate = proximoDiaValido(new Date());
-let baseWeek = startOfWeek(selectedDate);
+let baseWeek     = startOfWeek(selectedDate);
 
 function nomeMes(dt){
   return dt.toLocaleDateString("pt-BR",{ month:"long", year:"numeric"});
@@ -88,7 +96,7 @@ function renderSemana(){
     if (d.toDateString() === selectedDate.toDateString()) b.classList.add("active");
     b.addEventListener("click", ()=>{
       selectedDate = new Date(d);
-      inputData.value = selectedDate.toISOString().slice(0,10);
+      inputData.value = toISODate(selectedDate);
       renderSemana();
       renderHorarios();
     });
@@ -100,14 +108,15 @@ function renderSemana(){
 function geraSlots(){
   const slots=[];
   let h=8, m=0;
-  while (h<19 || (h===19 && m===0)){
+  while (h<19 || (h===19 && m===0)){ // 08:00 até 19:00
     slots.push(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`);
     m+=30; if (m===60){ m=0; h+=1; }
   }
-  return slots; // até 19:00
+  return slots;
 }
-async function lerHorariosOcupados(dateStr){
-  // fallback amigável: se falhar Firestore, retorna vazio (nenhum bloqueio)
+
+async function lerHorariosConfirmados(dateStr){
+  // Lê apenas agendamentos CONFIRMADOS para bloquear o horário
   try{
     const q = _fb.query(
       _fb.collection(_fb.db, "bookings"),
@@ -122,16 +131,17 @@ async function lerHorariosOcupados(dateStr){
     });
     return set;
   }catch(_e){
-    console.warn("Sem Firestore (ok para render):", _e?.code);
-    return new Set();
+    console.warn("Sem Firestore (seguindo com UI):", _e?.code);
+    return new Set(); // fallback: não bloqueia nada
   }
 }
+
 async function renderHorarios(){
-  const dateStr = selectedDate.toISOString().slice(0,10);
+  const dateStr = toISODate(selectedDate);
   infoP.textContent = `Horários de ${dateStr}`;
   timeGrid.innerHTML = "";
 
-  const ocupados = await lerHorariosOcupados(dateStr);
+  const ocupados = await lerHorariosConfirmados(dateStr);
   const slots = geraSlots().filter(t => !ocupados.has(t));
 
   if (!slots.length){
@@ -149,12 +159,12 @@ async function renderHorarios(){
 }
 
 // ---------- diálogo de confirmação ----------
-const dlg = document.getElementById("dlg");
-const formAgendar = document.getElementById("formAgendar");
-const resumo = document.getElementById("resumo");
-const titulo = document.getElementById("dlgTitulo");
-const msg = document.getElementById("msg");
-el("#btnCancelar")?.addEventListener("click", ()=> dlg.close());
+const dlg        = document.getElementById("dlg");
+const formAgendar= document.getElementById("formAgendar");
+const resumo     = document.getElementById("resumo");
+const titulo     = document.getElementById("dlgTitulo");
+const msg        = document.getElementById("msg");
+document.getElementById("btnCancelar")?.addEventListener("click", ()=> dlg.close());
 
 function chipsServicos(labels){
   return `<div class="chips">${labels.map(l=>`<span class="chip">${l}</span>`).join("")}</div>`;
@@ -165,9 +175,10 @@ function abrirDialogo(hhmm){
   if (ids.length===0){ alert("Selecione pelo menos 1 serviço antes."); return; }
 
   const labels = SERVICOS.filter(s=>ids.includes(s.id)).map(s=>s.nome);
-  const total = SERVICOS.filter(s=>ids.includes(s.id)).reduce((a,b)=>a+b.preco,0);
+  const total  = SERVICOS.filter(s=>ids.includes(s.id)).reduce((a,b)=>a+b.preco,0);
+  const dateStr= toISODate(selectedDate);
 
-  titulo.textContent = `Confirmar ${inputData.value || selectedDate.toISOString().slice(0,10)} às ${hhmm}`;
+  titulo.textContent = `Confirmar ${dateStr} às ${hhmm}`;
   resumo.innerHTML = `
     <div class="sumRow"><span class="muted">Serviços:</span> <strong>${labels.join(", ")}</strong></div>
     <div class="sumRow"><span class="muted">Total:</span> <strong>${fmt(total)}</strong></div>
@@ -179,51 +190,81 @@ function abrirDialogo(hhmm){
   formAgendar.onsubmit = async (e)=>{
     e.preventDefault();
     msg.textContent = "Enviando...";
+
     const nome = formAgendar.nome.value.trim();
     const telefone = formAgendar.telefone.value.trim();
     if (!nome || !telefone){ msg.textContent = "Preencha nome e telefone."; msg.className = "feedback erro"; return; }
 
     // monta dados
     const [H,M] = hhmm.split(":").map(Number);
-    const date = new Date(selectedDate);
-    date.setHours(H, M, 0, 0);
+    const startLocal = new Date(dateStr+"T00:00:00");
+    startLocal.setHours(H, M, 0, 0);
 
     const data = {
-      date: selectedDate.toISOString().slice(0,10),
+      date: dateStr,
       time: hhmm,
-      startsAt: _fb.Timestamp.fromDate(date),
+      startsAt: _fb.Timestamp.fromDate(startLocal),
       weekday: selectedDate.getDay(), // 0..6
       name: nome,
       phone: telefone,
-      status: "confirmed",
+      status: "pending", // <<<<< pendente até ADM confirmar
       services: ids,
-      servicesLabels: labels,
-      totalPrice: SERVICOS.filter(s=>ids.includes(s.id)).reduce((a,b)=>a+b.preco,0),
+      servicesLabels: SERVICOS.filter(s=>ids.includes(s.id)).map(s=>s.nome),
+      totalPrice: total,
       createdAt: _fb.serverTimestamp()
     };
     const docId = `${data.date}-${hhmm.replace(":","")}`;
 
     try{
-      await _fb.setDoc(_fb.doc(_fb.db,"bookings",docId), data, { merge:false });
-      msg.textContent = "Agendado com sucesso!";
+      // evita colisão: se já existir doc para esse horário, mostra aviso
+      const ref  = _fb.doc(_fb.db,"bookings",docId);
+      const snap = await _fb.getDoc(ref);
+      if (snap.exists()){
+        const cur = snap.data();
+        if (cur?.status === "confirmed"){
+          msg.textContent = "Este horário já foi confirmado por outro cliente. Escolha outro.";
+        } else {
+          msg.textContent = "Este horário já foi solicitado. Aguarde confirmação do ADM ou escolha outro.";
+        }
+        msg.className = "feedback erro";
+        return;
+      }
+
+      await _fb.setDoc(ref, data, { merge:false });
+      msg.textContent = "Solicitação enviada! Vamos confirmar pelo WhatsApp.";
       msg.className = "feedback ok";
-      setTimeout(()=>{ dlg.close(); renderHorarios(); }, 700);
+      setTimeout(()=>{ dlg.close(); renderHorarios(); }, 800);
     }catch(e){
       console.error(e?.code, e?.message);
-      msg.textContent = e?.message || "Erro ao salvar (verifique regras/App Check).";
+      msg.textContent = e?.message || "Erro ao salvar (verifique conexão/regras).";
       msg.className = "feedback erro";
     }
   };
 }
 
-// ---------- navegação de semana ----------
-prevWeekBtn.addEventListener("click", ()=>{ baseWeek = addDays(baseWeek,-7); selectedDate = proximoDiaValido(baseWeek); inputData.value = selectedDate.toISOString().slice(0,10); renderSemana(); renderHorarios(); });
-nextWeekBtn.addEventListener("click", ()=>{ baseWeek = addDays(baseWeek, 7); selectedDate = proximoDiaValido(baseWeek); inputData.value = selectedDate.toISOString().slice(0,10); renderSemana(); renderHorarios(); });
-btnHoje.addEventListener("click", ()=>{ selectedDate = proximoDiaValido(new Date()); baseWeek = startOfWeek(selectedDate); inputData.value = selectedDate.toISOString().slice(0,10); renderSemana(); renderHorarios(); });
+// ---------- navegação semana ----------
+prevWeekBtn.addEventListener("click", ()=>{
+  baseWeek = addDays(baseWeek,-7);
+  selectedDate = proximoDiaValido(baseWeek);
+  inputData.value = toISODate(selectedDate);
+  renderSemana(); renderHorarios();
+});
+nextWeekBtn.addEventListener("click", ()=>{
+  baseWeek = addDays(baseWeek, 7);
+  selectedDate = proximoDiaValido(baseWeek);
+  inputData.value = toISODate(selectedDate);
+  renderSemana(); renderHorarios();
+});
+btnHoje.addEventListener("click", ()=>{
+  selectedDate = proximoDiaValido(new Date());
+  baseWeek = startOfWeek(selectedDate);
+  inputData.value = toISODate(selectedDate);
+  renderSemana(); renderHorarios();
+});
 
 // ---------- inicialização ----------
 (function init(){
-  inputData.value = selectedDate.toISOString().slice(0,10);
+  inputData.value = toISODate(selectedDate);
   renderServicos();
   renderSemana();
   renderHorarios();
