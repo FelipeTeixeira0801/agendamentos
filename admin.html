@@ -4,80 +4,128 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>AgendApp — Área do ADM</title>
-<link rel="icon" href="/agendamentos/agendapp.png?v=154" />
+<link rel="icon" href="/agendamentos/agendapp.png?v=160" />
 <style>
-  :root{ --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
-         --border:#26262e; --text:#f5f5f7; --muted:#a8a8b3; --accent:#2dd4bf;
-         --ok:#22c55e; --danger:#f87171; }
+  :root{
+    --bg:#0b0b0e; --surface:#131318; --surface-2:#1a1a21;
+    --border:#26262e; --text:#f5f5f7; --muted:#a8a8b3; --accent:#2dd4bf;
+    --ok:#22c55e; --warn:#facc15; --danger:#f87171;
+  }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui, Arial, sans-serif}
 
+  /* Header */
   header{position:sticky;top:0;z-index:10;background:var(--surface);
     border-bottom:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
   .brand{display:flex;align-items:center;gap:12px}
   .brand img{width:64px;height:64px;object-fit:cover;border-radius:12px;filter:drop-shadow(0 0 10px rgba(45,212,191,.35))}
   .brand .name{font-weight:900;letter-spacing:.35px;font-size:26px;line-height:1}
-  .linkCliente{border:1px solid var(--border);padding:8px 12px;border-radius:10px}
+  @media (max-width:380px){ .brand img{width:58px;height:58px} .brand .name{font-size:24px} }
+  .linkCliente{border:1px solid var(--border);padding:8px 12px;border-radius:10px;color:var(--text);text-decoration:none}
   .linkCliente:hover{border-color:var(--accent)}
 
+  /* Layout geral */
   .wrap{min-height:calc(100vh - 92px);padding:18px}
   .container{max-width:1040px;margin:0 auto;display:grid;gap:14px}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
-  .title{margin:0 0 4px;font-size:22px;font-weight:800}
-  .sub{margin:0 0 14px;color:var(--muted);font-size:14px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px}
 
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:700}
+  /* ---- LOGIN (mobile-first) ---- */
+  #loginCard{max-width:460px;margin:0 auto}
+  .title{margin:0 0 4px;font-size:22px;font-weight:800;text-align:center}
+  .sub{margin:0 0 14px;color:var(--muted);font-size:14px;text-align:center}
+  .formGrid{display:grid;gap:12px}
+  .field{display:grid;gap:6px}
+  .field span{color:var(--muted);font-size:14px}
+  input{padding:14px 12px;border-radius:12px;border:1px solid var(--border);background:#0f0f14;color:var(--text);font-size:16px}
+  input:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:700}
   .btn:hover{border-color:var(--accent)}
   .btnPrimary{border-color:var(--accent);box-shadow:inset 0 0 0 1px rgba(45,212,191,.35)}
-  input{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#0f0f14;color:var(--text)}
-  .feedback{margin-top:8px;font-size:14px}
-  .ok{color:var(--ok)} .erro{color:var(--danger)} .muted{color:#a8a8b3}
+  .feedback{margin-top:8px;font-size:14px;text-align:center}
+  .ok{color:var(--ok)} .erro{color:var(--danger)} .muted{color:var(--muted)}
+
+  /* ---- PAINEL ---- */
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .toolsLeft{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  select{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#0f0f14;color:var(--text)}
+
+  /* Tabela de horários (grid) */
+  .grid{margin-top:12px}
+  .gridHead, .gridRow{
+    display:grid;align-items:center;gap:8px;
+    grid-template-columns: 90px 1.4fr 1.2fr 110px auto;
+  }
+  .gridHead{color:var(--muted);font-size:13px;padding:8px 6px}
+  .gridRow{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px}
+  .colHora{font-weight:800}
+  .status{font-weight:800}
+  .st-pending{color:var(--warn)} .st-confirmed{color:var(--ok)} .st-canceled{color:var(--danger)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btnSm{padding:8px 10px;font-size:14px;border-radius:10px}
+
+  @media (max-width:640px){
+    .gridHead{display:none}
+    .gridRow{grid-template-columns: 80px 1fr; row-gap:6px}
+    .colNome{grid-column:2/3}
+    .colContato{grid-column:2/3}
+    .colStatus{grid-column:2/3}
+    .actions{grid-column:1/3;justify-content:flex-start}
+  }
+
+  /* Modal editar */
+  dialog{border:none;border-radius:16px;max-width:560px;width:92%;background:var(--surface);color:var(--text);padding:0}
+  dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+  .sheet{padding:18px}
+  .sheet h3{margin:0 0 10px;font-size:18px}
+  .gridForm{display:grid;gap:10px}
+  .g2{grid-template-columns:1fr 1fr}
+  .sheet-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
 </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <img src="/agendamentos/agendapp.png?v=154" alt="Logo AgendApp" />
+      <img src="/agendamentos/agendapp.png?v=160" alt="Logo AgendApp" />
       <span class="name">AgendApp</span>
     </div>
-    <a class="linkCliente" href="./?v=154">Área do Cliente</a>
+    <a class="linkCliente" href="./?v=160">Área do Cliente</a>
   </header>
 
   <main class="wrap">
     <div class="container">
 
+      <!-- LOGIN -->
       <section class="card" id="loginCard">
         <h1 class="title">Área do ADM</h1>
         <p class="sub">Acesso restrito</p>
-        <form id="formLogin" class="grid" novalidate>
-          <label class="grid">
-            <span class="muted">E-mail</span>
+        <form id="formLogin" class="formGrid" novalidate>
+          <label class="field">
+            <span>E-mail</span>
             <input id="email" name="email" type="email" autocomplete="username" required />
           </label>
-          <label class="grid">
-            <span class="muted">Senha</span>
+          <label class="field">
+            <span>Senha</span>
             <input id="senha" name="senha" type="password" autocomplete="current-password" required />
           </label>
-          <div class="row">
+          <div class="row" style="justify-content:center">
             <button type="submit" class="btn btnPrimary" id="btnEntrar">Entrar</button>
-            <button type="button" class="btn" id="btnMostrar">Mostrar senha</button>
+            <button type="button" class="btn" id="btnMostrar">Mostrar</button>
             <button type="button" class="btn" id="btnReset">Esqueci a senha</button>
           </div>
         </form>
         <p id="msg" class="feedback"></p>
-        <p id="bootWarn" class="feedback erro" style="display:none">Falha ao carregar os scripts. Recarregue a página (Ctrl+F5). Se persistir, confira o caminho de <code>admin.js</code> e <code>firebase-init.js</code>.</p>
-        <noscript><p class="feedback erro">O JavaScript está desativado.</p></noscript>
       </section>
 
+      <!-- PAINEL -->
       <section class="card" id="panel" style="display:none">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <div class="row" style="gap:8px">
+        <div class="toolbar">
+          <div class="toolsLeft">
             <button class="btn" id="prevDay">‹</button>
             <input type="date" id="admDate" />
             <button class="btn" id="nextDay">›</button>
-            <select id="statusFilter">
+            <select id="statusFilter" title="Filtrar">
               <option value="all">Todos</option>
               <option value="pending">Pendentes</option>
               <option value="confirmed">Confirmados</option>
@@ -85,24 +133,69 @@
             </select>
             <button class="btn" id="btnHoje">Hoje</button>
           </div>
-          <div class="row">
+          <div class="toolsLeft">
             <span class="muted" id="who"></span>
             <button type="button" class="btn" id="btnSair">Sair</button>
           </div>
         </div>
-        <div class="list" id="list" style="margin-top:12px"></div>
-        <p id="listaMsg" class="feedback muted"></p>
+
+        <div class="grid">
+          <div class="gridHead">
+            <div>Hora</div><div>Nome</div><div>Contato</div><div>Status</div><div></div>
+          </div>
+          <div id="list"></div>
+          <p id="listaMsg" class="feedback muted" style="text-align:left"></p>
+        </div>
       </section>
     </div>
   </main>
 
-  <script>
-    // se o módulo não carregar, mostramos um aviso de boot
-    window.addEventListener('error', function(ev){
-      const el = document.getElementById('bootWarn');
-      if (el) el.style.display = 'block';
-    }, { once:true });
-  </script>
-  <script type="module" src="./admin.js?v=154"></script>
+  <!-- Modal editar -->
+  <dialog id="dlgEdit">
+    <div class="sheet">
+      <h3>Editar agendamento</h3>
+      <form id="formEdit" class="gridForm">
+        <label class="field">
+          <span>Nome</span>
+          <input type="text" id="edNome" required />
+        </label>
+        <label class="field">
+          <span>Telefone</span>
+          <input type="tel" id="edFone" required />
+        </label>
+        <div class="gridForm g2">
+          <label class="field">
+            <span>Data</span>
+            <input type="date" id="edData" required />
+          </label>
+          <label class="field">
+            <span>Hora</span>
+            <select id="edHora" required></select>
+          </label>
+        </div>
+        <div class="gridForm g2">
+          <label class="field">
+            <span>Status</span>
+            <select id="edStatus">
+              <option value="pending">Pendente</option>
+              <option value="confirmed">Confirmado</option>
+              <option value="canceled">Cancelado</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Total (R$)</span>
+            <input type="number" id="edTotal" step="1" min="0" />
+          </label>
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn" id="edCancelar">Fechar</button>
+          <button type="submit" class="btn btnPrimary">Salvar</button>
+        </div>
+      </form>
+      <p id="edMsg" class="feedback"></p>
+    </div>
+  </dialog>
+
+  <script type="module" src="./admin.js?v=160"></script>
 </body>
 </html>
