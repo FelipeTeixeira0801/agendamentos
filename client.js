@@ -23,7 +23,7 @@ const startOfWeek = (d)=>{ const x=new Date(d); const day=x.getDay(); const diff
 
 // ---------- serviços ----------
 const SERVICOS = [
-  { id:"cabelo",       nome:"Cabelo",       preco:35 },
+  { id:"cabelo",       nome:"Cabelo",       preco:40 },
   { id:"barba",        nome:"Barba",        preco:30 },
   { id:"perfil",       nome:"Perfil",       preco:20 },
   { id:"sobrancelha",  nome:"Sobrancelha",  preco:15 },
